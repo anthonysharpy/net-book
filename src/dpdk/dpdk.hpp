@@ -1,6 +1,9 @@
+#include <stop_token>
+
 namespace netbook::dpdk {
 
-bool initialise();
+int initialise();
 void cleanup();
+void poll(std::stop_token stop, int port_id);
 
 }
