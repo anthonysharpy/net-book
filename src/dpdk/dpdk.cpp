@@ -16,12 +16,17 @@ namespace netbook::dpdk {
 
 // For now we'll just hard-code the pool and port here.
 rte_mempool* mempool;
-int port_id;
+int port_id = -1;
 
 void cleanup() {
-    rte_eth_dev_stop(port_id);
-    rte_eth_dev_close(port_id);
-    rte_mempool_free(mempool);
+    if (port_id != -1) {
+        rte_eth_dev_stop(port_id);
+        rte_eth_dev_close(port_id);
+    }
+    
+    if (mempool != nullptr) {
+        rte_mempool_free(mempool);
+    }
 
     int status = rte_eal_cleanup();
 
@@ -88,7 +93,7 @@ bool initialise() {
     if (status < 0) {
         std::cerr << "Failed initialising DPDK: " << status << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     std::cout << "Creating mbuf pool..." << std::endl;
@@ -98,7 +103,7 @@ bool initialise() {
     if (mempool == nullptr) {
         std::cerr << "Failed initialising mbuf pool" << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     auto port_ids = get_port_ids();
@@ -106,7 +111,7 @@ bool initialise() {
     if (port_ids.size() == 0) {
         std::cerr << "No port IDs found" << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     port_id = port_ids[0];
@@ -127,7 +132,7 @@ bool initialise() {
     if (status != 0) {
         std::cerr << "Unable to configure Ethernet device: " << status << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     std::cout << "Setting up receive queues..." << std::endl;
@@ -135,7 +140,7 @@ bool initialise() {
     if (!setup_receive_queues()) {
         std::cerr << "Failed setting up receive queues" << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     std::cout << "Setting up transmit queues..." << std::endl;
@@ -143,7 +148,7 @@ bool initialise() {
     if (!setup_transmit_queues()) {
         std::cerr << "Failed setting up transmit queues" << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
 
     std::cout << "Trying to enable promiscuous mode..." << std::endl;
@@ -158,8 +163,10 @@ bool initialise() {
     if (status < 0) {
         std::cout << "Failed to start the Ethernet device: " << status << std::endl;
         cleanup();
-        return -1;
+        return false;
     }
+
+    return true;
 }
 
 // Poll the already created Ethernet device.
@@ -171,7 +178,7 @@ void poll(std::stop_token stop) {
         packets_count = rte_eth_rx_burst(port_id, 0, received_packets, 32);
 
         if (packets_count == 0) {
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            //std::this_thread::sleep_for(std::chrono::microseconds(10));
             continue;
         }
 
