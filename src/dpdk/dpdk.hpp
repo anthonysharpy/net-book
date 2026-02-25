@@ -2,8 +2,8 @@
 
 namespace netbook::dpdk {
 
-int initialise();
+bool initialise();
 void cleanup();
-void poll(std::stop_token stop, int port_id);
+void poll(std::stop_token stop);
 
 }

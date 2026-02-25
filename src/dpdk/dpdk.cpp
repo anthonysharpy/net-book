@@ -14,7 +14,15 @@
 // Some code taken from https://github.com/awaiskhalidawan/dpdk-tutorials.
 namespace netbook::dpdk {
 
+// For now we'll just hard-code the pool and port here.
+rte_mempool* mempool;
+int port_id;
+
 void cleanup() {
+    rte_eth_dev_stop(port_id);
+    rte_eth_dev_close(port_id);
+    rte_mempool_free(mempool);
+
     int status = rte_eal_cleanup();
 
      if (status != 0) {
@@ -25,7 +33,7 @@ void cleanup() {
 }
 
 // Returns true on success.
-bool setup_receive_queues(int port_id, rte_mempool* mempool) {
+bool setup_receive_queues() {
     int status = rte_eth_rx_queue_setup(port_id, 0, 256, SOCKET_ID_ANY, nullptr, mempool);
     
     if (status != 0) {
@@ -37,7 +45,7 @@ bool setup_receive_queues(int port_id, rte_mempool* mempool) {
 }
 
 // Returns true on success.
-bool setup_transmit_queues(int port_id) {
+bool setup_transmit_queues() {
     int status = rte_eth_tx_queue_setup(port_id, 0, 256, SOCKET_ID_ANY, nullptr);
     
     if (status != 0) {
@@ -59,8 +67,8 @@ std::vector<int> get_port_ids() {
     return port_ids;
 }
 
-// Returns the port ID on success, -1 on failure.
-int initialise() {
+// Returns true on success.
+bool initialise() {
     std::cout << "Initialising DPDK..." << std::endl;
 
     char* eal_args[] = {
@@ -85,7 +93,7 @@ int initialise() {
 
     std::cout << "Creating mbuf pool..." << std::endl;
 
-    auto mempool = rte_pktmbuf_pool_create("netbook-pool", 1023, 128, 0, RTE_MBUF_DEFAULT_BUF_SIZE, SOCKET_ID_ANY);
+    mempool = rte_pktmbuf_pool_create("netbook-pool", 1023, 128, 0, RTE_MBUF_DEFAULT_BUF_SIZE, SOCKET_ID_ANY);
 
     if (mempool == nullptr) {
         std::cerr << "Failed initialising mbuf pool" << std::endl;
@@ -101,7 +109,7 @@ int initialise() {
         return -1;
     }
 
-    int port_id = port_ids[0];
+    port_id = port_ids[0];
 
     rte_eth_conf port_configuration = {
         .rxmode = {
@@ -124,7 +132,7 @@ int initialise() {
 
     std::cout << "Setting up receive queues..." << std::endl;
 
-    if (!setup_receive_queues(port_id, mempool)) {
+    if (!setup_receive_queues()) {
         std::cerr << "Failed setting up receive queues" << std::endl;
         cleanup();
         return -1;
@@ -132,7 +140,7 @@ int initialise() {
 
     std::cout << "Setting up transmit queues..." << std::endl;
 
-    if (!setup_transmit_queues(port_id)) {
+    if (!setup_transmit_queues()) {
         std::cerr << "Failed setting up transmit queues" << std::endl;
         cleanup();
         return -1;
@@ -152,12 +160,10 @@ int initialise() {
         cleanup();
         return -1;
     }
-
-    return port_id;
 }
 
-// Poll the already created Ethernet device associated with port_id.
-void poll(std::stop_token stop, int port_id) {
+// Poll the already created Ethernet device.
+void poll(std::stop_token stop) {
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
 
