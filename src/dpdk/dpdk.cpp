@@ -310,8 +310,6 @@ void poll_write(std::stop_token stop) {
     WriteRequest data[write_buffer_size];
 
     while (!stop.stop_requested()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
         auto items_popped = write_buffer.pop_many(data, write_buffer_size);
         
         for (size_t i = 0; i < items_popped; ++i) {
