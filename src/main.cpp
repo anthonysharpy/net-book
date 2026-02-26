@@ -29,7 +29,8 @@ void initialise() {
 
 void poll() {
     std::cout << "Beginning DPDK poll loop..." << std::endl;
-    std::jthread poll_thread(netbook::dpdk::poll);
+    std::jthread poll_write_thread(netbook::dpdk::poll_write);
+    std::jthread poll_read_thread(netbook::dpdk::poll_read);
 
     while (got_stop_signal == 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -37,8 +38,10 @@ void poll() {
 
     std::cout << "Got stop signal, stopping..." << std::endl;
 
-    poll_thread.request_stop();
-    poll_thread.join();
+    poll_write_thread.request_stop();
+    poll_read_thread.request_stop();
+    poll_write_thread.join();
+    poll_read_thread.join();
 }
 
 int main() {
