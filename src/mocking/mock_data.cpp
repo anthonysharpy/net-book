@@ -10,7 +10,6 @@ std::uint16_t current_index = 0;
 
 IncomingMarketMessage create_mock_market_data() {
     return IncomingMarketMessage {
-        .received_timestamp_nanoseconds = 0,
         .msg_id = ++current_index,
         .unit_price = static_cast<uint32_t>((helpers::get_random_number() % 1000) + 1),
         .index_id = static_cast<uint16_t>((helpers::get_random_number() % 19) + 1),
