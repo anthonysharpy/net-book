@@ -27,7 +27,7 @@ void initialise() {
     }
 
     std::cout << "Registering network receivers..." << std::endl;
-    
+
     netbook::dpdk::register_receiver(netbook::processing::process_message);
 
     std::cout << "Initialisation succeeded" << std::endl;
@@ -37,6 +37,7 @@ void poll() {
     std::cout << "Beginning DPDK poll loop..." << std::endl;
     std::jthread poll_write_thread(netbook::dpdk::poll_write);
     std::jthread poll_read_thread(netbook::dpdk::poll_read);
+    std::jthread poll_read_buffer_thread(netbook::dpdk::poll_read_buffer);
     std::jthread mock_data_thread(netbook::mocking::push_mock_data);
 
     while (got_stop_signal == 0) {
@@ -48,9 +49,11 @@ void poll() {
     mock_data_thread.request_stop();
     poll_write_thread.request_stop();
     poll_read_thread.request_stop();
+    poll_read_buffer_thread.request_stop();
     mock_data_thread.join();
     poll_write_thread.join();
     poll_read_thread.join();
+    poll_read_buffer_thread.join();
 }
 
 int main() {

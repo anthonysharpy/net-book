@@ -20,6 +20,7 @@ namespace netbook::dpdk {
 // Combined length of Ethernet, IPv4 and UDP headers.
 static constexpr size_t headers_length = sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
 static constexpr size_t write_buffer_size = 128;
+static constexpr size_t read_buffer_size = 128;
 
 struct WriteRequest {
     char* location;
@@ -29,7 +30,10 @@ struct WriteRequest {
 // Data is pushed here before writing.
 netbook::concurrency::SPSCRingBuffer<WriteRequest, write_buffer_size> write_buffer{};
 
-// When we receive data, we pass it to the provided callback functions.
+// Data is pushed here after reading (but before processing).
+netbook::concurrency::SPSCRingBuffer<rte_mbuf*, read_buffer_size> read_buffer{};
+
+// When we process data, we pass it to the provided callback functions.
 inline std::vector<DataCallbackSignature> callback_functions;
 
 // For now we'll just hard-code the pool and port here.
@@ -198,7 +202,7 @@ bool initialise() {
     return true;
 }
 
-// Poll (read) the already created Ethernet device.
+// Poll (read) the already created Ethernet device and store incoming packets in the read buffer.
 void poll_read(std::stop_token stop) {
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
@@ -207,23 +211,35 @@ void poll_read(std::stop_token stop) {
         packets_count = rte_eth_rx_burst(port_id, 0, received_packets, 32);
 
         if (packets_count == 0) {
-            //std::this_thread::sleep_for(std::chrono::microseconds(10));
             continue;
         }
 
         for (int i = 0; i < packets_count; ++i) {
             std::cout << "Received packet of length " << received_packets[i]->data_len << std::endl;
+            read_buffer.push(received_packets[i]);
+        }
+    }
+}
 
-            auto data_location = rte_pktmbuf_mtod(received_packets[i], char*);
+// Poll the read buffer, sending packets out to be processed.
+void poll_read_buffer(std::stop_token stop) {
+    rte_mbuf* data[32];
+    size_t items_popped = 0;
+
+    while (!stop.stop_requested()) {
+        items_popped = read_buffer.pop_many(data, 32);
+
+        for (int i = 0; i < items_popped; ++i) {
+            auto data_location = rte_pktmbuf_mtod(data[i], char*);
             auto inner_data_location = data_location + headers_length;
-            auto inner_data_length = received_packets[i]->data_len - headers_length;
+            auto inner_data_length = data[i]->data_len - headers_length;
 
             for (const DataCallbackSignature& callback : callback_functions) {
                 callback(inner_data_location, inner_data_length);
             }
         }
 
-        rte_pktmbuf_free_bulk(received_packets, packets_count);
+        rte_pktmbuf_free_bulk(data, items_popped);
     }
 }
 
