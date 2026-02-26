@@ -4,6 +4,7 @@
 #include <thread>
 #include "dpdk/dpdk.hpp"
 #include "mocking/mock_data.hpp"
+#include "processing/message_processor.hpp"
 
 static volatile sig_atomic_t got_stop_signal = 0;
 
@@ -24,6 +25,10 @@ void initialise() {
         std::cerr << "Initialisation failed, exiting" << std::endl;
         exit(1);
     }
+
+    std::cout << "Registering network receivers..." << std::endl;
+    
+    netbook::dpdk::register_receiver(netbook::processing::process_message);
 
     std::cout << "Initialisation succeeded" << std::endl;
 }
