@@ -1,6 +1,6 @@
 #pragma once
 #include <stop_token>
-#include <dpdk.hpp>
+#include <dpdk/dpdk.hpp>
 
 namespace netbook::mocking {
 

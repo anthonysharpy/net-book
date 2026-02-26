@@ -1,6 +1,8 @@
 #include "mock_data.hpp"
 #include "types/types.hpp"
 
+namespace netbook::mocking {
+
 using netbook::types::IncomingMarketMessage;
 
 // Push mock data to the network controller.
@@ -15,5 +17,7 @@ void push_mock_data(std::stop_token stop) {
 }
 
 IncomingMarketMessage create_mock_market_data() {
+
+}
 
 }
