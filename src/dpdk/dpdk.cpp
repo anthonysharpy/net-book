@@ -300,8 +300,6 @@ void send_packet(rte_mbuf* packet) {
     if (packets_sent == 0) {
         std::cout << "Unable to transmit the packet" << std::endl;
         rte_pktmbuf_free(packet);   // As the packet is not transmitted, we need to free the memory buffer by our self.
-    } else {
-        std::cout << "Packet transmitted successfully" << std::endl;
     }
 }
 
