@@ -6,6 +6,7 @@
 #include "mocking/mock_data.hpp"
 #include "processing/message_processor.hpp"
 #include "globals/globals.hpp"
+#include "globals/constants.hpp"
 #include "helpers/time_helpers.hpp"
 
 static volatile sig_atomic_t got_stop_signal = 0;
@@ -49,7 +50,7 @@ void print_stats(std::stop_token stop) {
         std::cout << "Packets processed: " <<  packets_processed << "(" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
         std::cout.flush();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(netbook::globals::print_delay_ms));
 
         // Wipe the lines we printed above.
         std::cout << "\033[" << 2 << "F";

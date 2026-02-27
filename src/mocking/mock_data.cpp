@@ -2,6 +2,7 @@
 #include "types/types.hpp"
 #include "helpers/number_helpers.hpp"
 #include "globals/globals.hpp"
+#include "globals/constants.hpp"
 
 namespace netbook::mocking {
 
@@ -23,7 +24,10 @@ void push_mock_data(std::stop_token stop) {
     uint64_t packets_sent = 0;
 
     while (!stop.stop_requested()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        #if packet_creation_delay_ns > 0
+        std::this_thread::sleep_for(std::chrono::nanoseconds(globals::packet_creation_delay_ns));
+        #endif
+
         auto message = create_mock_market_data();
         auto data = message.serialise_as_network_bytes();
 
