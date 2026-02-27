@@ -61,7 +61,7 @@ void poll() {
     std::cout << "Beginning DPDK poll loop..." << std::endl;
     std::jthread poll_write_thread(netbook::dpdk::poll_write);
     std::jthread poll_read_thread(netbook::dpdk::poll_read);
-    std::jthread poll_read_buffer_thread(netbook::dpdk::poll_read_buffer);
+    std::jthread poll_process_thread(netbook::dpdk::poll_process_buffer);
     std::jthread mock_data_thread(netbook::mocking::push_mock_data);
     std::jthread print_thread(print_stats);
 
@@ -71,18 +71,26 @@ void poll() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    print_thread.request_stop();
+    print_thread.join();
+
     std::cout << "Got stop signal, stopping..." << std::endl;
 
+    std::cout << "Waiting for mock data thread to stop..." << std::endl;
     mock_data_thread.request_stop();
-    poll_write_thread.request_stop();
-    poll_read_thread.request_stop();
-    poll_read_buffer_thread.request_stop();
-    print_thread.request_stop();
     mock_data_thread.join();
+
+    std::cout << "Waiting for dpdk write thread to stop..." << std::endl;
+    poll_write_thread.request_stop();
     poll_write_thread.join();
+
+    std::cout << "Waiting for dpdk read thread to stop..." << std::endl;
+    poll_read_thread.request_stop();
     poll_read_thread.join();
-    poll_read_buffer_thread.join();
-    print_thread.join();
+
+    std::cout << "Waiting for dpdk process thread to stop..." << std::endl;
+    poll_process_thread.request_stop();
+    poll_process_thread.join();
 }
 
 int main() {

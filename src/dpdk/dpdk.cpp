@@ -221,7 +221,7 @@ void poll_read(std::stop_token stop) {
 }
 
 // Poll the read buffer, sending packets out to be processed.
-void poll_read_buffer(std::stop_token stop) {
+void poll_process_buffer(std::stop_token stop) {
     rte_mbuf* data[32];
     size_t items_popped = 0;
 
@@ -247,7 +247,7 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
 
     // Get a memory buffer from our memory pool. On this memory buffer we will write our packet data.
     if (rte_mempool_get(mempool, reinterpret_cast<void **>(&packet)) != 0) {
-        std::cout << "Unable to get memory buffer from memory pool" << std::endl;
+        // Maybe there is no space in the mempool.
         return nullptr;
     }
 
@@ -319,12 +319,15 @@ void send_packet(rte_mbuf* packet) {
 // Poll (write) the already created Ethernet device.
 void poll_write(std::stop_token stop) {
     WriteRequest data[write_buffer_size];
+    rte_mbuf* packet;
 
     while (!stop.stop_requested()) {
         auto items_popped = write_buffer.pop_many(data, write_buffer_size);
         
         for (size_t i = 0; i < items_popped; ++i) {
-            auto packet = create_packet(data[i].location, data[i].size);
+            // Keep retrying until we can successfully create it.
+            while ((packet = create_packet(data[i].location, data[i].size)) == nullptr) {}
+
             send_packet(packet);
         }
     }
