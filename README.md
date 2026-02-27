@@ -4,7 +4,7 @@ This is a work in progress :-) (25/3/2025)
 
 ## Installation and Configuration
 
-In order to run the program, you may need to follow all or some of the below steps. Note that these might not work on all versions of Linux.
+In order to run the program, you may need to follow the steps below. Note that these might not work on all versions of Linux.
 
 ### Install dependencies
 
