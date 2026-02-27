@@ -1,15 +1,20 @@
 #include <iostream>
 #include "message_processor.hpp"
 #include "types/types.hpp"
+#include "globals/globals.hpp"
 
 namespace netbook::processing {
 
 using types::MarketMessage;
 
+uint64_t packets_processed = 0;
+
 void process_message(char* data, size_t) {
     auto message = MarketMessage::from_network_bytes(data);
 
-    std::cout << "Received a message: " << message.to_string() << std::endl;
+    ++packets_processed;
+
+    globals::packets_processed.store(packets_processed);
 }
 
 }

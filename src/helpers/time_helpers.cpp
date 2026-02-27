@@ -9,4 +9,10 @@ std::uint64_t get_unix_timestamp_nanoseconds() {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
 }
 
+// A timestamp that can be used for benchmarking.
+std::uint64_t get_benchmark_timestamp_nanoseconds() {
+    auto now = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+}
+
 }

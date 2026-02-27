@@ -215,7 +215,6 @@ void poll_read(std::stop_token stop) {
         }
 
         for (int i = 0; i < packets_count; ++i) {
-            std::cout << "Received packet of length " << received_packets[i]->data_len << std::endl;
             read_buffer.push(received_packets[i]);
         }
     }
@@ -245,8 +244,6 @@ void poll_read_buffer(std::stop_token stop) {
 
 rte_mbuf* create_packet(char* data, std::size_t data_length) {
     rte_mbuf* packet = nullptr;
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Get a memory buffer from our memory pool. On this memory buffer we will write our packet data.
     if (rte_mempool_get(mempool, reinterpret_cast<void **>(&packet)) != 0) {
