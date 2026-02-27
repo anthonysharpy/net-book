@@ -68,6 +68,15 @@ void poll() {
     netbook::globals::simulation_start_time_ns.store(netbook::helpers::get_benchmark_timestamp_nanoseconds());
 
     while (got_stop_signal == 0) {
+        auto current_time = netbook::helpers::get_benchmark_timestamp_nanoseconds();
+        auto start_time = netbook::globals::simulation_start_time_ns.load();
+        auto runtime_seconds = static_cast<double>(current_time - start_time) / 1000000000.0;
+
+        if (netbook::globals::program_runtime_limit_seconds != 0
+            && runtime_seconds >= netbook::globals::program_runtime_limit_seconds) {
+            break;
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
