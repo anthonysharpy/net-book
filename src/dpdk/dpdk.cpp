@@ -255,16 +255,16 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
     // into parts i.e. Head room memory area, main memory area and tail room memory area. The details are available at:
     // https://doc.dpdk.org/guides/prog_guide/mbuf_lib.html
     // We will get a pointer to the main memory area of our memory buffer and write packet info.
-    uint8_t *mbuf_data = rte_pktmbuf_mtod(packet, uint8_t *);
+    std::uint8_t *mbuf_data = rte_pktmbuf_mtod(packet, std::uint8_t *);
 
     // Setting Ethernet header information (Source MAC, Destination MAC, Ethernet type).
     rte_ether_hdr *const eth_hdr = reinterpret_cast<rte_ether_hdr *>(mbuf_data);
     eth_hdr->ether_type = rte_cpu_to_be_16(RTE_ETHER_TYPE_IPV4);
 
-    const uint8_t src_mac_addr[6] = {0x08, 0x00, 0x27, 0x95, 0xBD, 0xAE};
+    const std::uint8_t src_mac_addr[6] = {0x08, 0x00, 0x27, 0x95, 0xBD, 0xAE};
     memcpy(eth_hdr->src_addr.addr_bytes, src_mac_addr, sizeof(src_mac_addr));
 
-    const uint8_t dst_mac_addr[6] = {0x08, 0x00, 0x27, 0x35, 0x14, 0x15};
+    const std::uint8_t dst_mac_addr[6] = {0x08, 0x00, 0x27, 0x35, 0x14, 0x15};
     memcpy(eth_hdr->dst_addr.addr_bytes, dst_mac_addr, sizeof(dst_mac_addr));
 
     // Setting IPv4 header information.
@@ -278,10 +278,10 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
     ipv4_hdr->time_to_live = 64;        // Setting Time to live = 64;
     ipv4_hdr->next_proto_id = 17;       // Setting the next protocol as UDP (17).
 
-    const uint8_t src_ip_addr[4] = {10, 0, 9, 8};
+    const std::uint8_t src_ip_addr[4] = {10, 0, 9, 8};
     memcpy(&ipv4_hdr->src_addr, src_ip_addr, sizeof(src_ip_addr));      // Setting source ip address = 1.2.3.4
 
-    const uint8_t dest_ip_addr[4] = {10, 0, 9, 6};
+    const std::uint8_t dest_ip_addr[4] = {10, 0, 9, 6};
     memcpy(&ipv4_hdr->dst_addr, dest_ip_addr, sizeof(dest_ip_addr));    // Setting destination ip address = 4.3.2.1
 
     ipv4_hdr->hdr_checksum = 0;
@@ -295,7 +295,7 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
     udp_hdr->dgram_cksum = 0;                       // Setting checksum = 0
 
     // Setting data in the UDP payload
-    uint8_t *payload_location = mbuf_data + sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
+    std::uint8_t *payload_location = mbuf_data + sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
     memset(payload_location, 0, data_length);
     memcpy(payload_location, data, data_length);
 
@@ -308,7 +308,7 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
 
 void send_packet(rte_mbuf* packet) {
     // The DPDK API `rte_eth_tx_burst` will automatically release the memory buffer after tranmission is successful.
-    const uint16_t packets_sent = rte_eth_tx_burst(port_id, 0, &packet, 1);
+    const std::uint16_t packets_sent = rte_eth_tx_burst(port_id, 0, &packet, 1);
     
     if (packets_sent == 0) {
         std::cout << "Unable to transmit the packet" << std::endl;

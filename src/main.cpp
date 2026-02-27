@@ -45,8 +45,8 @@ void print_stats(std::stop_token stop) {
         auto packets_sent_per_second = static_cast<double>(packets_sent) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_processed_per_second = static_cast<double>(packets_processed) / (static_cast<double>(time_elapsed) / 1000000000.0);
 
-        std::cout << "Packets sent: " <<  packets_sent << "(" << static_cast<uint64_t>(packets_sent_per_second) << " packets/s)" << std::endl;
-        std::cout << "Packets processed: " <<  packets_processed << "(" << static_cast<uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets sent: " <<  packets_sent << "(" << static_cast<std::uint64_t>(packets_sent_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets processed: " <<  packets_processed << "(" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
         std::cout.flush();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
