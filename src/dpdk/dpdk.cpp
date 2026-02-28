@@ -21,17 +21,7 @@ namespace netbook::dpdk {
 
 // Combined length of Ethernet, IPv4 and UDP headers.
 static constexpr size_t headers_length = sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
-static constexpr size_t write_buffer_size = 128;
 static constexpr size_t read_buffer_size = 128;
-
-struct WriteRequest {
-    char* location;
-    size_t size;
-};
-
-// Data is pushed here before writing.
-netbook::concurrency::SPSCRingBuffer<WriteRequest, write_buffer_size> write_buffer{};
-std::uint64_t items_pushed_to_write_buffer = 0;
 
 // Data is pushed here after reading (but before processing).
 netbook::concurrency::SPSCRingBuffer<rte_mbuf*, read_buffer_size> read_buffer{};
@@ -90,17 +80,6 @@ bool setup_transmit_queues() {
     }
 
     return true;
-}
-
-// Push data into the buffer for writing.
-void push_data(char* data, size_t data_length) {
-    write_buffer.push(WriteRequest{data, data_length});
-
-    ++items_pushed_to_write_buffer;
-
-    if (items_pushed_to_write_buffer % globals::write_stats_interval == 0) {
-        globals::packets_written_to_write_buffer.store(items_pushed_to_write_buffer);
-    }
 }
 
 std::vector<int> get_port_ids() {
@@ -339,27 +318,20 @@ void send_packet(rte_mbuf* packet) {
     }
 }
 
-// Poll (write) the already created Ethernet device.
-void poll_write(std::stop_token stop) {
-    WriteRequest data[write_buffer_size];
+// Push data into the buffer for writing.
+void push_data(char* data, size_t data_length) {
+    static std::uint64_t packets_written_to_dpdk = 0;
     rte_mbuf* packet;
-    uint64_t packets_written = 0;
 
-    while (!stop.stop_requested()) {
-        auto items_popped = write_buffer.pop_many(data, write_buffer_size);
-        
-        for (size_t i = 0; i < items_popped; ++i) {
-            // Keep retrying until we can successfully create it.
-            while ((packet = create_packet(data[i].location, data[i].size)) == nullptr) {}
+    // Keep retrying until we can successfully create it.
+    while ((packet = create_packet(data, data_length)) == nullptr) {}
 
-            send_packet(packet);
-        }
+    send_packet(packet);
 
-        packets_written += items_popped;
+    ++packets_written_to_dpdk;
 
-        if (packets_written % globals::write_stats_interval == 0) {
-            globals::packets_written_to_dpdk.store(packets_written);
-        }
+    if (packets_written_to_dpdk % globals::write_stats_interval == 0) {
+        globals::packets_written_to_dpdk.store(packets_written_to_dpdk);
     }
 }
 
