@@ -43,19 +43,16 @@ void print_stats(std::stop_token stop) {
         auto time_elapsed = current_time - netbook::globals::simulation_start_time_ns.load();
 
         auto packets_created = netbook::globals::packets_created.load();
-        auto packets_written_to_write_buffer = netbook::globals::packets_written_to_write_buffer.load();
         auto packets_written_to_dpdk = netbook::globals::packets_written_to_dpdk.load();
         auto packets_read_from_dpdk = netbook::globals::packets_read_from_dpdk.load();
         auto packets_processed = netbook::globals::packets_processed.load();
 
         auto packets_created_per_second = static_cast<double>(packets_created) / (static_cast<double>(time_elapsed) / 1000000000.0);
-        auto packets_written_to_write_buffer_per_second = static_cast<double>(packets_written_to_write_buffer) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_written_to_dpdk_per_second = static_cast<double>(packets_written_to_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_read_from_dpdk_per_second = static_cast<double>(packets_read_from_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_processed_per_second = static_cast<double>(packets_processed) / (static_cast<double>(time_elapsed) / 1000000000.0);
 
         std::cout << "Packets created: " <<  packets_created << " (" << static_cast<std::uint64_t>(packets_created_per_second) << " packets/s)" << std::endl;
-        std::cout << "Packets written to write buffer: " <<  packets_written_to_write_buffer << " (" << static_cast<std::uint64_t>(packets_written_to_write_buffer_per_second) << " packets/s)" << std::endl;
         std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk) << " packets/s)" << std::endl;
         std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)" << std::endl;
         std::cout << "Packets processed: " <<  packets_processed << " (" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
@@ -64,13 +61,17 @@ void print_stats(std::stop_token stop) {
         std::this_thread::sleep_for(std::chrono::milliseconds(netbook::globals::print_delay_ms));
 
         // Wipe the lines we printed above.
-        std::cout << "\033[" << 5 << "F";
+        std::cout << "\033[" << 4 << "F";
     }
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 void poll() {
     std::cout << "Beginning DPDK poll loop..." << std::endl;
-    std::jthread poll_write_thread(netbook::dpdk::poll_write);
     std::jthread poll_read_thread(netbook::dpdk::poll_read);
     std::jthread poll_process_thread(netbook::dpdk::poll_process_buffer);
     std::jthread mock_data_thread(netbook::mocking::push_mock_data);
@@ -99,10 +100,6 @@ void poll() {
     std::cout << "Waiting for mock data thread to stop..." << std::endl;
     mock_data_thread.request_stop();
     mock_data_thread.join();
-
-    std::cout << "Waiting for dpdk write thread to stop..." << std::endl;
-    poll_write_thread.request_stop();
-    poll_write_thread.join();
 
     std::cout << "Waiting for dpdk read thread to stop..." << std::endl;
     poll_read_thread.request_stop();
