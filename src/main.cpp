@@ -56,7 +56,7 @@ void print_stats(std::stop_token stop) {
         auto packets_processed_per_second = static_cast<double>(packets_processed) / (static_cast<double>(time_elapsed) / 1000000000.0);
 
         std::cout << "Packets created: " <<  packets_created << " (" << static_cast<std::uint64_t>(packets_created_per_second) << " packets/s)" << std::endl;
-        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk) << " packets/s)" << std::endl;
+        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk_per_second) << " packets/s)" << std::endl;
         std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)" << std::endl;
         std::cout << "Packets processed: " <<  packets_processed << " (" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
         std::cout.flush();
