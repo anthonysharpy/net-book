@@ -82,7 +82,7 @@ release:
 pgo-gen: clean
 	rm -rf pgodata
 	$(MAKE) all COMPILE_FLAGS="$(PGO_COMPILE_FLAGS)" LINK_FLAGS="$(PGO_LINK_FLAGS)"
-	./nanofill
+	./$(BINARY_NAME)
 	$(MAKE) clean
 
 # ===== Profile ===== #

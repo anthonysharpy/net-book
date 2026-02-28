@@ -34,6 +34,6 @@ grep -i HugePages_Total /proc/meminfo # Check that it applied the change. If not
 Note that if you don't use sudo, access to hugepages might get denied.
 
 ```
-sudo ./nanofill
+sudo ./netbook
 ```
 
