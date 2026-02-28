@@ -98,6 +98,8 @@ std::vector<int> get_port_ids() {
 bool initialise() {
     std::cout << "Initialising DPDK..." << std::endl;
 
+    std::string core_range = "0-" + std::to_string(globals::dpdk_queues - 1);
+
     char* eal_args[] = {
         (char*)"netbook", 
         (char*)"--vdev=net_ring0",
@@ -105,7 +107,7 @@ bool initialise() {
         (char*)"--no-pci", 
         (char*)"--log-level=eal,debug", 
         (char*)"-l", 
-        (char*)"0-1", 
+        core_range.data(), 
         (char*)"-n", 
         (char*)"4", 
         nullptr
