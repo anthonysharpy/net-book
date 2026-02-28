@@ -2,7 +2,9 @@
 
 This is a work in progress :-) (25/3/2025)
 
-## Installation and Configuration
+NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
+
+## Prerequisites
 
 In order to run the program, you may need to follow the steps below. Note that these might not work on all versions of Linux.
 
@@ -38,7 +40,7 @@ make release
 
 ## Usage
 
-Note that if you don't use sudo, access to hugepages might get denied.
+Simply run the command below. Note that if you don't use sudo, access to hugepages might get denied.
 
 ```
 sudo ./netbook
