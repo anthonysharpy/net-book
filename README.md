@@ -29,11 +29,26 @@ sudo sysctl -w vm.nr_hugepages=128
 grep -i HugePages_Total /proc/meminfo # Check that it applied the change. If not, try restarting computer to free memory.
 ```
 
+## Building
+
+```
+sudo make pgo-gen
+make release
+```
+
 ## Usage
 
 Note that if you don't use sudo, access to hugepages might get denied.
 
 ```
 sudo ./netbook
+```
+
+### Args
+
+The below are optional.
+
+```
+--runtime=N # The program stops after N seconds. N must be an integer.
 ```
 
