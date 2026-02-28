@@ -114,10 +114,20 @@ void poll() {
     }
 }
 
-int main() {
+void parse_args(int argc, char* argv[]) {
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+
+        if (arg.starts_with("--runtime=")) {
+            netbook::globals::program_runtime_limit_seconds = std::stoi(arg.substr(10));
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    parse_args(argc, argv);
+
     initialise();
-
     poll();
-
     netbook::dpdk::cleanup();
 }
