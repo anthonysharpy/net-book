@@ -9,9 +9,8 @@ using DataCallbackSignature = void(*)(char*, size_t);
 
 bool initialise();
 void cleanup();
-void poll_read(std::stop_token stop);
-void poll_process_buffer(std::stop_token stop);
-void push_data(char* data, size_t data_length);
+void poll_read(std::stop_token stop, std::uint8_t queue_id);
+void push_data(char* data, size_t data_length, std::uint8_t queue_id);
 void register_receiver(DataCallbackSignature callback);
 
 }

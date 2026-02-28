@@ -22,10 +22,6 @@ namespace netbook::dpdk {
 
 // Combined length of Ethernet, IPv4 and UDP headers.
 static constexpr size_t headers_length = sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
-static constexpr size_t read_buffer_size = 128;
-
-// Data is pushed here after reading (but before processing).
-netbook::concurrency::SPSCRingBuffer<rte_mbuf*, read_buffer_size> read_buffer{};
 
 // When we process data, we pass it to the provided callback functions.
 inline std::vector<DataCallbackSignature> callback_functions;
@@ -61,11 +57,13 @@ void cleanup() {
 
 // Returns true on success.
 bool setup_receive_queues() {
-    int status = rte_eth_rx_queue_setup(port_id, 0, 256, SOCKET_ID_ANY, nullptr, mempool);
-    
-    if (status != 0) {
-        std::cerr << "Failed setting up receive queue: " << status << std::endl;
-        return false;
+    for (int i = 0; i < globals::dpdk_queues; ++i) {
+        int status = rte_eth_rx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr, mempool);
+        
+        if (status != 0) {
+            std::cerr << "Failed setting up receive queue: " << status << std::endl;
+            return false;
+        }
     }
 
     return true;
@@ -73,11 +71,13 @@ bool setup_receive_queues() {
 
 // Returns true on success.
 bool setup_transmit_queues() {
-    int status = rte_eth_tx_queue_setup(port_id, 0, 256, SOCKET_ID_ANY, nullptr);
-    
-    if (status != 0) {
-        std::cerr << "Failed setting up transmit queue: " << status << std::endl;
-        return false;
+    for (int i = 0; i < globals::dpdk_queues; ++i) {
+        int status = rte_eth_tx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr);
+        
+        if (status != 0) {
+            std::cerr << "Failed setting up transmit queue: " << status << std::endl;
+            return false;
+        }
     }
 
     return true;
@@ -149,7 +149,7 @@ bool initialise() {
 
     std::cout << "Configuring Ethernet device..." << std::endl;
 
-    status = rte_eth_dev_configure(port_id, 1, 1, &port_configuration);
+    status = rte_eth_dev_configure(port_id, globals::dpdk_queues, globals::dpdk_queues, &port_configuration);
 
     if (status != 0) {
         std::cerr << "Unable to configure Ethernet device: " << status << std::endl;
@@ -191,61 +191,39 @@ bool initialise() {
     return true;
 }
 
-// Poll (read) the already created Ethernet device and store incoming packets in the read buffer.
-void poll_read(std::stop_token stop) {
-    concurrency::use_unique_core_for_thread();
+// Poll (read) the already created Ethernet device and process the incoming packets.
+void poll_read(std::stop_token stop, std::uint8_t queue_id) {
+    concurrency::pin_thread_to_core(queue_id);
 
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
     std::uint64_t packets_read = 0;
 
     while (!stop.stop_requested()) {
-        packets_count = rte_eth_rx_burst(port_id, 0, received_packets, 32);
+        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, 32);
 
         if (packets_count == 0) {
             continue;
         }
 
         for (int i = 0; i < packets_count; ++i) {
-            read_buffer.push(received_packets[i]);
-        }
-
-        packets_read += packets_count;
-
-        if (packets_read % globals::write_stats_interval == 0) {
-            globals::packets_read_from_dpdk.store(packets_read);
-        }
-    }
-}
-
-// Poll the read buffer, sending packets out to be processed.
-void poll_process_buffer(std::stop_token stop) {
-    concurrency::use_unique_core_for_thread();
-
-    rte_mbuf* data[32];
-    size_t items_popped = 0;
-    std::uint64_t packets_processed = 0;
-
-    while (!stop.stop_requested()) {
-        items_popped = read_buffer.pop_many(data, 32);
-
-        for (int i = 0; i < items_popped; ++i) {
-            auto data_location = rte_pktmbuf_mtod(data[i], char*);
+            auto data_location = rte_pktmbuf_mtod(received_packets[i], char*);
             auto inner_data_location = data_location + headers_length;
-            auto inner_data_length = data[i]->data_len - headers_length;
+            auto inner_data_length = received_packets[i]->data_len - headers_length;
 
             for (const DataCallbackSignature& callback : callback_functions) {
                 callback(inner_data_location, inner_data_length);
             }
         }
 
-        packets_processed += items_popped;
+        rte_pktmbuf_free_bulk(received_packets, packets_count);
 
-        if (packets_processed % globals::write_stats_interval == 0) {
-            globals::packets_processed.store(packets_processed);
+        packets_read += packets_count;
+
+        if (packets_read % globals::write_stats_interval == 0) {
+            globals::packets_read_from_dpdk.fetch_add(packets_read);
+            packets_read = 0;
         }
-
-        rte_pktmbuf_free_bulk(data, items_popped);
     }
 }
 
@@ -313,9 +291,9 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
     return packet;
 }
 
-void send_packet(rte_mbuf* packet) {
+void send_packet(rte_mbuf* packet, std::uint8_t queue_id) {
     // The DPDK API `rte_eth_tx_burst` will automatically release the memory buffer after tranmission is successful.
-    const std::uint16_t packets_sent = rte_eth_tx_burst(port_id, 0, &packet, 1);
+    const std::uint16_t packets_sent = rte_eth_tx_burst(port_id, queue_id, &packet, 1);
     
     if (packets_sent == 0) {
         std::cout << "Unable to transmit the packet" << std::endl;
@@ -324,19 +302,20 @@ void send_packet(rte_mbuf* packet) {
 }
 
 // Push data into the buffer for writing.
-void push_data(char* data, size_t data_length) {
-    static std::uint64_t packets_written_to_dpdk = 0;
+void push_data(char* data, size_t data_length, std::uint8_t queue_id) {
+    static std::uint64_t packets_written = 0;
     rte_mbuf* packet;
 
     // Keep retrying until we can successfully create it.
     while ((packet = create_packet(data, data_length)) == nullptr) {}
 
-    send_packet(packet);
+    send_packet(packet, queue_id);
 
-    ++packets_written_to_dpdk;
+    ++packets_written;
 
-    if (packets_written_to_dpdk % globals::write_stats_interval == 0) {
-        globals::packets_written_to_dpdk.store(packets_written_to_dpdk);
+    if (packets_written % globals::write_stats_interval == 0) {
+        globals::packets_written_to_dpdk.fetch_add(packets_written);
+        packets_written = 0;
     }
 }
 
