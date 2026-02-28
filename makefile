@@ -82,7 +82,7 @@ release:
 pgo-gen: clean
 	rm -rf pgodata
 	$(MAKE) all COMPILE_FLAGS="$(PGO_COMPILE_FLAGS)" LINK_FLAGS="$(PGO_LINK_FLAGS)"
-	./$(BINARY_NAME)
+	./$(BINARY_NAME) --runtime=10
 	$(MAKE) clean
 
 # ===== Profile ===== #
