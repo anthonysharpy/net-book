@@ -15,6 +15,7 @@
 #include "concurrency/spscringbuffer.hpp"
 #include "globals/constants.hpp"
 #include "globals/globals.hpp"
+#include "concurrency/concurrency.hpp"
 
 // Some code taken from https://github.com/awaiskhalidawan/dpdk-tutorials.
 namespace netbook::dpdk {
@@ -192,6 +193,8 @@ bool initialise() {
 
 // Poll (read) the already created Ethernet device and store incoming packets in the read buffer.
 void poll_read(std::stop_token stop) {
+    concurrency::use_unique_core_for_thread();
+
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
     std::uint64_t packets_read = 0;
@@ -217,6 +220,8 @@ void poll_read(std::stop_token stop) {
 
 // Poll the read buffer, sending packets out to be processed.
 void poll_process_buffer(std::stop_token stop) {
+    concurrency::use_unique_core_for_thread();
+
     rte_mbuf* data[32];
     size_t items_popped = 0;
     std::uint64_t packets_processed = 0;

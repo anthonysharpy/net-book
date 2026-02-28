@@ -8,6 +8,7 @@
 #include "globals/globals.hpp"
 #include "globals/constants.hpp"
 #include "helpers/time_helpers.hpp"
+#include "concurrency/concurrency.hpp"
 
 static volatile sig_atomic_t got_stop_signal = 0;
 
@@ -38,6 +39,8 @@ void initialise() {
 
 // Prints stats to the console.
 void print_stats(std::stop_token stop) {
+    netbook::concurrency::use_unique_core_for_thread();
+
     while (!stop.stop_requested()) {
         auto current_time = netbook::helpers::get_benchmark_timestamp_nanoseconds();
         auto time_elapsed = current_time - netbook::globals::simulation_start_time_ns.load();

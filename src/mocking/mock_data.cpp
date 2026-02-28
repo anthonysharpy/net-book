@@ -3,6 +3,7 @@
 #include "helpers/number_helpers.hpp"
 #include "globals/globals.hpp"
 #include "globals/constants.hpp"
+#include "concurrency/concurrency.hpp"
 
 namespace netbook::mocking {
 
@@ -21,6 +22,8 @@ IncomingMarketMessage create_mock_market_data() {
 
 // Push mock data to the network controller.
 void push_mock_data(std::stop_token stop) {
+    concurrency::use_unique_core_for_thread();
+
     uint64_t packets_created = 0;
 
     while (!stop.stop_requested()) {
