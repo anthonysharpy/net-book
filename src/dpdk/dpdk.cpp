@@ -13,6 +13,8 @@
 #include <cstddef>
 #include "dpdk.hpp"
 #include "concurrency/spscringbuffer.hpp"
+#include "globals/constants.hpp"
+#include "globals/globals.hpp"
 
 // Some code taken from https://github.com/awaiskhalidawan/dpdk-tutorials.
 namespace netbook::dpdk {
@@ -29,6 +31,7 @@ struct WriteRequest {
 
 // Data is pushed here before writing.
 netbook::concurrency::SPSCRingBuffer<WriteRequest, write_buffer_size> write_buffer{};
+std::uint64_t items_pushed_to_write_buffer = 0;
 
 // Data is pushed here after reading (but before processing).
 netbook::concurrency::SPSCRingBuffer<rte_mbuf*, read_buffer_size> read_buffer{};
@@ -92,6 +95,12 @@ bool setup_transmit_queues() {
 // Push data into the buffer for writing.
 void push_data(char* data, size_t data_length) {
     write_buffer.push(WriteRequest{data, data_length});
+
+    ++items_pushed_to_write_buffer;
+
+    if (items_pushed_to_write_buffer % globals::write_stats_interval == 0) {
+        globals::packets_written_to_write_buffer.store(items_pushed_to_write_buffer);
+    }
 }
 
 std::vector<int> get_port_ids() {
@@ -206,6 +215,7 @@ bool initialise() {
 void poll_read(std::stop_token stop) {
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
+    std::uint64_t packets_read = 0;
 
     while (!stop.stop_requested()) {
         packets_count = rte_eth_rx_burst(port_id, 0, received_packets, 32);
@@ -217,6 +227,12 @@ void poll_read(std::stop_token stop) {
         for (int i = 0; i < packets_count; ++i) {
             read_buffer.push(received_packets[i]);
         }
+
+        packets_read += packets_count;
+
+        if (packets_read % globals::write_stats_interval == 0) {
+            globals::packets_read_from_dpdk.store(packets_read);
+        }
     }
 }
 
@@ -224,6 +240,7 @@ void poll_read(std::stop_token stop) {
 void poll_process_buffer(std::stop_token stop) {
     rte_mbuf* data[32];
     size_t items_popped = 0;
+    std::uint64_t packets_processed = 0;
 
     while (!stop.stop_requested()) {
         items_popped = read_buffer.pop_many(data, 32);
@@ -236,6 +253,12 @@ void poll_process_buffer(std::stop_token stop) {
             for (const DataCallbackSignature& callback : callback_functions) {
                 callback(inner_data_location, inner_data_length);
             }
+        }
+
+        packets_processed += items_popped;
+
+        if (packets_processed % globals::write_stats_interval == 0) {
+            globals::packets_processed.store(packets_processed);
         }
 
         rte_pktmbuf_free_bulk(data, items_popped);
@@ -320,6 +343,7 @@ void send_packet(rte_mbuf* packet) {
 void poll_write(std::stop_token stop) {
     WriteRequest data[write_buffer_size];
     rte_mbuf* packet;
+    uint64_t packets_written = 0;
 
     while (!stop.stop_requested()) {
         auto items_popped = write_buffer.pop_many(data, write_buffer_size);
@@ -329,6 +353,12 @@ void poll_write(std::stop_token stop) {
             while ((packet = create_packet(data[i].location, data[i].size)) == nullptr) {}
 
             send_packet(packet);
+        }
+
+        packets_written += items_popped;
+
+        if (packets_written % globals::write_stats_interval == 0) {
+            globals::packets_written_to_dpdk.store(packets_written);
         }
     }
 }

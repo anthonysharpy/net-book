@@ -21,7 +21,7 @@ IncomingMarketMessage create_mock_market_data() {
 
 // Push mock data to the network controller.
 void push_mock_data(std::stop_token stop) {
-    uint64_t packets_sent = 0;
+    uint64_t packets_created = 0;
 
     while (!stop.stop_requested()) {
         #if packet_creation_delay_ns > 0
@@ -33,9 +33,9 @@ void push_mock_data(std::stop_token stop) {
 
         netbook::dpdk::push_data(reinterpret_cast<char*>(&data), sizeof(data));
 
-        ++packets_sent;
+        ++packets_created;
 
-        netbook::globals::packets_sent.store(packets_sent);
+        netbook::globals::packets_created.store(packets_created);
     }
 }
 

@@ -41,19 +41,30 @@ void print_stats(std::stop_token stop) {
     while (!stop.stop_requested()) {
         auto current_time = netbook::helpers::get_benchmark_timestamp_nanoseconds();
         auto time_elapsed = current_time - netbook::globals::simulation_start_time_ns.load();
-        auto packets_sent = netbook::globals::packets_sent.load();
+
+        auto packets_created = netbook::globals::packets_created.load();
+        auto packets_written_to_write_buffer = netbook::globals::packets_written_to_write_buffer.load();
+        auto packets_written_to_dpdk = netbook::globals::packets_written_to_dpdk.load();
+        auto packets_read_from_dpdk = netbook::globals::packets_read_from_dpdk.load();
         auto packets_processed = netbook::globals::packets_processed.load();
-        auto packets_sent_per_second = static_cast<double>(packets_sent) / (static_cast<double>(time_elapsed) / 1000000000.0);
+
+        auto packets_created_per_second = static_cast<double>(packets_created) / (static_cast<double>(time_elapsed) / 1000000000.0);
+        auto packets_written_to_write_buffer_per_second = static_cast<double>(packets_written_to_write_buffer) / (static_cast<double>(time_elapsed) / 1000000000.0);
+        auto packets_written_to_dpdk_per_second = static_cast<double>(packets_written_to_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
+        auto packets_read_from_dpdk_per_second = static_cast<double>(packets_read_from_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_processed_per_second = static_cast<double>(packets_processed) / (static_cast<double>(time_elapsed) / 1000000000.0);
 
-        std::cout << "Packets sent: " <<  packets_sent << "(" << static_cast<std::uint64_t>(packets_sent_per_second) << " packets/s)" << std::endl;
-        std::cout << "Packets processed: " <<  packets_processed << "(" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets created: " <<  packets_created << " (" << static_cast<std::uint64_t>(packets_created_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets written to write buffer: " <<  packets_written_to_write_buffer << " (" << static_cast<std::uint64_t>(packets_written_to_write_buffer_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk) << " packets/s)" << std::endl;
+        std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets processed: " <<  packets_processed << " (" << static_cast<std::uint64_t>(packets_processed_per_second) << " packets/s)" << std::endl;
         std::cout.flush();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(netbook::globals::print_delay_ms));
 
         // Wipe the lines we printed above.
-        std::cout << "\033[" << 2 << "F";
+        std::cout << "\033[" << 5 << "F";
     }
 }
 
