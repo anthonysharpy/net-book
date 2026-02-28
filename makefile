@@ -89,7 +89,7 @@ pgo-gen: clean
 
 profile: clean
 	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
-	sudo perf record -F 16000 -g -- ./$(BINARY_NAME)
+	sudo perf record -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
 	sudo hotspot perf.data
 
 # ===== Run/Build Tests ===== #
