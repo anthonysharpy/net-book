@@ -222,7 +222,7 @@ void poll_read(std::stop_token stop, std::uint8_t queue_id) {
 
         packets_read += packets_count;
 
-        if (packets_read % globals::write_stats_interval == 0) {
+        if (packets_read >= globals::write_stats_interval) {
             globals::packets_read_from_dpdk.fetch_add(packets_read);
             packets_read = 0;
         }
@@ -230,7 +230,7 @@ void poll_read(std::stop_token stop, std::uint8_t queue_id) {
 }
 
 rte_mbuf* create_packet(char* data, std::size_t data_length) {
-    rte_mbuf* packet = nullptr;
+    rte_mbuf* packet;
 
     // Get a memory buffer from our memory pool. On this memory buffer we will write our packet data.
     if (rte_mempool_get(mempool, reinterpret_cast<void **>(&packet)) != 0) {
@@ -315,7 +315,7 @@ void push_data(char* data, size_t data_length, std::uint8_t queue_id) {
 
     ++packets_written;
 
-    if (packets_written % globals::write_stats_interval == 0) {
+    if (packets_written >= globals::write_stats_interval) {
         globals::packets_written_to_dpdk.fetch_add(packets_written);
         packets_written = 0;
     }
