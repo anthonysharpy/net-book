@@ -1,7 +1,7 @@
 # ==================== HOW TO USE ==================== #
 #
-# Release build: make pgo-gen -> make release
-# Profile build: make pgo-gen -> make profile
+# Release build: sudo make pgo-gen -> make release
+# Profile build: sudo make pgo-gen -> make profile
 # Run tests: make test
 # Normal build (not recommended): make
 #
