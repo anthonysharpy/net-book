@@ -305,7 +305,7 @@ void send_packet(rte_mbuf* packet, std::uint8_t queue_id) {
 
 // Push data into the buffer for writing.
 void push_data(char* data, size_t data_length, std::uint8_t queue_id) {
-    static std::uint64_t packets_written = 0;
+    thread_local std::uint64_t packets_written = 0;
     rte_mbuf* packet;
 
     // Keep retrying until we can successfully create it.
