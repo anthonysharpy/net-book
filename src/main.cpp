@@ -67,6 +67,7 @@ void print_stats(std::stop_token stop) {
         std::cout << "\033[" << 4 << "F";
     }
 
+    // Fix corrupt console output on function exit.
     std::cout << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
