@@ -19,7 +19,7 @@
 namespace netbook::dpdk {
 
 // Combined length of Ethernet, IPv4 and UDP headers.
-static constexpr size_t headers_length = sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
+constexpr size_t HEADERS_LENGTH = sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr);
 
 // When we process data, we pass it to the provided callback functions.
 inline std::vector<DataCallbackSignature> callback_functions;
@@ -202,8 +202,8 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
 
         for (int i = 0; i < packets_count; ++i) {
             auto data_location = rte_pktmbuf_mtod(received_packets[i], char*);
-            auto inner_data_location = data_location + headers_length;
-            auto inner_data_length = received_packets[i]->data_len - headers_length;
+            auto inner_data_location = data_location + HEADERS_LENGTH;
+            auto inner_data_length = received_packets[i]->data_len - HEADERS_LENGTH;
 
             for (const DataCallbackSignature& callback : callback_functions) {
                 callback(inner_data_location, inner_data_length);
@@ -275,7 +275,7 @@ rte_mbuf* create_packet(char* data, std::size_t data_length) {
 
     // Setting the total packet size in our memory buffer.
     // Total packet size = Ethernet header size + IPv4 header size + UDP header size + Payload size.
-    packet->data_len = packet->pkt_len = headers_length + data_length;
+    packet->data_len = packet->pkt_len = HEADERS_LENGTH + data_length;
 
     return packet;
 }
