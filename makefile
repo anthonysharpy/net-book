@@ -96,7 +96,7 @@ profile: clean
 # ===== Benchmark ===== #
 
 benchmark: clean
-	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
+	$(MAKE) all COMPILE_FLAGS="$(BENCHMARK_COMPILE_FLAGS)" LINK_FLAGS="$(BENCHMARK_LINK_FLAGS)"
 
 # ===== Run/Build Tests ===== #
 
