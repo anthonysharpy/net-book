@@ -21,7 +21,7 @@ GOOGLE_TEST_INCLUDE_DIR = third_party/googletest/googletest/include
 BUILD_DIR = build
 TESTS_DIR = tests
 
-BASE_COMPILE_FLAGS = -DNDEBUG -std=c++23 -march=native -flto=auto -Ofast -Wall -Wextra -Wpedantic -pipe -MMD -MP -I$(SRC_DIR) $(SUPPRESSED_WARNINGS) $(shell pkg-config --cflags libdpdk)
+BASE_COMPILE_FLAGS = -DNDEBUG -std=c++23 -march=native -flto=auto -Ofast -Wall -Wextra -Wpedantic -pipe -MMD -MP -I$(SRC_DIR) $(SUPPRESSED_WARNINGS) $(shell pkg-config --cflags libdpdk | sed 's/-I/-isystem /g')
 BASE_LINK_FLAGS = -flto $(shell pkg-config --libs libdpdk)
 TEST_COMPILE_FLAGS = -std=c++23 -O0 -g -Wall -Wextra -march=native -Wpedantic -pipe -MMD -MP -I$(SRC_DIR) -I$(GOOGLE_TEST_INCLUDE_DIR) $(SUPPRESSED_WARNINGS)
 TEST_LINK_FLAGS =
