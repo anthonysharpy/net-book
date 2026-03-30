@@ -1,6 +1,6 @@
 # NetBook
 
-This is a work in progress :-) (25/3/2025)
+This is a work in progress :-) (30/3/2025)
 
 NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
 
@@ -9,7 +9,6 @@ NetBook writes and reads market-data networking packets using DPDK, bypassing th
 In order to run the program, you may need to follow the steps below. Note that these might not work on all versions of Linux.
 
 ### Install dependencies
-
 
 ```
 sudo apt update
@@ -46,24 +45,19 @@ sudo chmod 777 /dev/hugepages
 
 ## Building
 
-```
-sudo make pgo-gen
-make release
-```
+**make release**: Build for release.
 
 ## Usage
 
-Simply run the command below. Note that if you don't use sudo, access to hugepages might get denied.
-
 ```
-sudo ./netbook
+./netbook
 ```
 
 ### Args
 
 The below are optional.
 
-```
---runtime=N # The program stops after N seconds. N must be an integer.
-```
+| <div style="width:30vw">Command</div> | Explanation |
+| --- | --- |
+| --runtime=N | The program stops after N seconds. N must be an integer |
 
