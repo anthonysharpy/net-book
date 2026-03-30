@@ -28,8 +28,8 @@ TEST_LINK_FLAGS =
 # Use -Ofast optimisation. More risky, but should work assuming the code is correct.
 RELEASE_COMPILE_FLAGS = $(BASE_COMPILE_FLAGS) -fprofile-use=pgodata -fprofile-correction
 RELEASE_LINK_FLAGS = $(BASE_LINK_FLAGS) -fprofile-use=pgodata
-PROFILE_COMPILE_FLAGS  = $(BASE_COMPILE_FLAGS) -g -fno-omit-frame-pointer -fprofile-use=pgodata -fprofile-correction
-PROFILE_LINK_FLAGS = $(BASE_LINK_FLAGS) -fprofile-use=pgodata
+PROFILE_COMPILE_FLAGS  = $(BASE_COMPILE_FLAGS) -g -fno-omit-frame-pointer
+PROFILE_LINK_FLAGS = $(BASE_LINK_FLAGS)
 PGO_COMPILE_FLAGS = $(BASE_COMPILE_FLAGS) -fprofile-generate=pgodata
 PGO_LINK_FLAGS = $(BASE_LINK_FLAGS) -fprofile-generate=pgodata
 BENCHMARK_COMPILE_FLAGS = $(BASE_COMPILE_FLAGS)
@@ -90,7 +90,7 @@ pgo-gen: clean
 
 profile: clean
 	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
-	sudo perf record -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
+	sudo perf record -e cycles,cache-references,LLC-load-misses -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
 	sudo hotspot perf.data
 
 # ===== Benchmark ===== #
