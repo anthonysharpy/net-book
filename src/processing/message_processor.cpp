@@ -1,7 +1,6 @@
 #include <iostream>
 #include "message_processor.hpp"
 #include "types/types.hpp"
-#include "globals/globals.hpp"
 
 namespace netbook::processing {
 

@@ -13,8 +13,7 @@
 #include <cstddef>
 #include "dpdk.hpp"
 #include "concurrency/spscringbuffer.hpp"
-#include "globals/constants.hpp"
-#include "globals/globals.hpp"
+#include "constants/constants.hpp"
 #include "concurrency/concurrency.hpp"
 
 // Some code taken from https://github.com/awaiskhalidawan/dpdk-tutorials.
@@ -57,7 +56,7 @@ void cleanup() {
 
 // Returns true on success.
 bool setup_receive_queues() {
-    for (unsigned int i = 0; i < globals::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
         int status = rte_eth_rx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr, mempool);
         
         if (status != 0) {
@@ -71,7 +70,7 @@ bool setup_receive_queues() {
 
 // Returns true on success.
 bool setup_transmit_queues() {
-    for (unsigned int i = 0; i < globals::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
         int status = rte_eth_tx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr);
         
         if (status != 0) {
@@ -98,7 +97,7 @@ std::vector<int> get_port_ids() {
 bool initialise() {
     std::cout << "Initialising DPDK...\n";
 
-    std::string core_range = "0-" + std::to_string(globals::dpdk_queue_count - 1);
+    std::string core_range = "0-" + std::to_string(constants::dpdk_queue_count - 1);
 
     char* eal_args[] = {
         (char*)"netbook", 
@@ -146,7 +145,7 @@ bool initialise() {
 
     std::cout << "Configuring Ethernet device...\n";
 
-    status = rte_eth_dev_configure(port_id, globals::dpdk_queue_count, globals::dpdk_queue_count, &port_configuration);
+    status = rte_eth_dev_configure(port_id, constants::dpdk_queue_count, constants::dpdk_queue_count, &port_configuration);
 
     if (status != 0) {
         std::cerr << "Unable to configure Ethernet device: " << status << "\n";

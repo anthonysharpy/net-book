@@ -1,8 +1,7 @@
 #include "mock_data.hpp"
 #include "types/types.hpp"
 #include "helpers/number_helpers.hpp"
-#include "globals/globals.hpp"
-#include "globals/constants.hpp"
+#include "constants/constants.hpp"
 #include "concurrency/concurrency.hpp"
 
 namespace netbook::mocking {
@@ -26,7 +25,7 @@ void mock_data_pusher(std::stop_token stop, std::uint8_t queue_id, std::uint64_t
 
     while (!stop.stop_requested() && packets_to_push > 0) {
         #if packet_creation_delay_ns > 0
-        std::this_thread::sleep_for(std::chrono::nanoseconds(globals::packet_creation_delay_ns));
+        std::this_thread::sleep_for(std::chrono::nanoseconds(constants::packet_creation_delay_ns));
         #endif
 
         auto message = create_mock_market_data();

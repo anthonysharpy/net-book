@@ -5,8 +5,7 @@
 #include "dpdk/dpdk.hpp"
 #include "mocking/mock_data.hpp"
 #include "processing/message_processor.hpp"
-#include "globals/globals.hpp"
-#include "globals/constants.hpp"
+#include "constants/constants.hpp"
 #include "helpers/time_helpers.hpp"
 #include "concurrency/concurrency.hpp"
 
@@ -25,22 +24,22 @@ void initialise() {
 
 void poll() {
     std::cout << "Beginning DPDK poll loop...\n";
-    std::cout << "Sending " << netbook::globals::packet_limit << " packets over " << netbook::globals::dpdk_queue_count << " queues...\n";
+    std::cout << "Sending " << netbook::constants::packet_limit << " packets over " << netbook::constants::dpdk_queue_count << " queues...\n";
 
     std::vector<std::jthread> poll_read_threads;
     std::vector<std::jthread> mock_data_threads;
 
-    poll_read_threads.reserve(netbook::globals::dpdk_queue_count);
-    mock_data_threads.reserve(netbook::globals::dpdk_queue_count);
+    poll_read_threads.reserve(netbook::constants::dpdk_queue_count);
+    mock_data_threads.reserve(netbook::constants::dpdk_queue_count);
 
     auto start_time = netbook::helpers::get_benchmark_timestamp_nanoseconds();
 
-    for (unsigned int i = 0; i < netbook::globals::dpdk_queue_count; ++i) {
-        poll_read_threads.emplace_back(netbook::dpdk::poll_read, i, netbook::globals::packets_per_queue);
-        mock_data_threads.emplace_back(netbook::mocking::mock_data_pusher, i, netbook::globals::packets_per_queue);
+    for (unsigned int i = 0; i < netbook::constants::dpdk_queue_count; ++i) {
+        poll_read_threads.emplace_back(netbook::dpdk::poll_read, i, netbook::constants::packets_per_queue);
+        mock_data_threads.emplace_back(netbook::mocking::mock_data_pusher, i, netbook::constants::packets_per_queue);
     }
 
-    for (unsigned int i = 0; i < netbook::globals::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < netbook::constants::dpdk_queue_count; ++i) {
         mock_data_threads[i].join();
         poll_read_threads[i].join();
     }
