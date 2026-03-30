@@ -21,7 +21,7 @@ IncomingMarketMessage create_mock_market_data() {
 }
 
 // Push mock data to the network controller.
-void push_mock_data(std::stop_token stop, std::uint8_t queue_id) {
+void mock_data_pusher(std::stop_token stop, std::uint8_t queue_id) {
     concurrency::pin_thread_to_core(queue_id);
 
     while (!stop.stop_requested()) {

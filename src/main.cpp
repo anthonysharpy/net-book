@@ -45,10 +45,10 @@ void poll() {
     std::vector<std::jthread> mock_data_threads;
 
     for (int i = 0; i < netbook::globals::dpdk_queue_count; ++i) {
-        std::cout << "Creating queue loop " << i << "...\n";
+        std::cout << "Creating queue " << i << "...\n";
 
         poll_read_threads.emplace_back(netbook::dpdk::poll_read, i);
-        mock_data_threads.emplace_back(netbook::mocking::push_mock_data, i);
+        mock_data_threads.emplace_back(netbook::mocking::mock_data_pusher, i);
     }
    
     std::jthread print_thread(netbook::output::print_stats_thread);
@@ -65,13 +65,13 @@ void poll() {
             break;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+
+    std::cout << "Got stop signal, stopping...\n";
 
     print_thread.request_stop();
     print_thread.join();
-
-    std::cout << "Got stop signal, stopping...\n";
 
     for (int i = 0; i < netbook::globals::dpdk_queue_count; ++i) {
         std::cout << "Waiting for queue loop " << i << " to stop...\n";
