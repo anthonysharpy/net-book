@@ -73,8 +73,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 # ===== Build (Release) ===== #
 
-release:
-	$(MAKE) clean
+release: pgo-gen
 	$(MAKE) all COMPILE_FLAGS="$(RELEASE_COMPILE_FLAGS)" LINK_FLAGS="$(RELEASE_LINK_FLAGS)"
 
 # ===== Performance-Guided Optimisation ===== #
