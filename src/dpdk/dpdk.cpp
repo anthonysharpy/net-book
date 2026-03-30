@@ -56,7 +56,7 @@ void cleanup() {
 // Returns true on success.
 bool setup_receive_queues() {
     for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
-        int status = rte_eth_rx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr, mempool);
+        int status = rte_eth_rx_queue_setup(port_id, i, 128, SOCKET_ID_ANY, nullptr, mempool);
         
         if (status != 0) {
             std::cerr << "Failed setting up receive queue: " << status << "\n";
@@ -70,7 +70,7 @@ bool setup_receive_queues() {
 // Returns true on success.
 bool setup_transmit_queues() {
     for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
-        int status = rte_eth_tx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr);
+        int status = rte_eth_tx_queue_setup(port_id, i, 128, SOCKET_ID_ANY, nullptr);
         
         if (status != 0) {
             std::cerr << "Failed setting up transmit queue: " << status << "\n";
