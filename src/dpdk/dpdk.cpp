@@ -140,14 +140,9 @@ bool initialise() {
 
     port_id = port_ids[0];
 
-    rte_eth_conf port_configuration = {
-        .rxmode = {
-            .mq_mode = RTE_ETH_MQ_RX_NONE
-        },
-        .txmode = {
-            .mq_mode = RTE_ETH_MQ_TX_NONE
-        }
-    };
+    rte_eth_conf port_configuration{};
+    port_configuration.rxmode.mq_mode = RTE_ETH_MQ_RX_NONE;
+    port_configuration.txmode.mq_mode = RTE_ETH_MQ_TX_NONE;
 
     std::cout << "Configuring Ethernet device...\n";
 
