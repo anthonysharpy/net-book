@@ -32,6 +32,8 @@ PROFILE_COMPILE_FLAGS  = $(BASE_COMPILE_FLAGS) -g -fno-omit-frame-pointer -fprof
 PROFILE_LINK_FLAGS = $(BASE_LINK_FLAGS) -fprofile-use=pgodata
 PGO_COMPILE_FLAGS = $(BASE_COMPILE_FLAGS) -fprofile-generate=pgodata
 PGO_LINK_FLAGS = $(BASE_LINK_FLAGS) -fprofile-generate=pgodata
+BENCHMARK_COMPILE_FLAGS = $(BASE_COMPILE_FLAGS)
+BENCHMARK_LINK_FLAGS = $(BASE_LINK_FLAGS)
 
 # ===== Vars ===== #
 
@@ -57,7 +59,7 @@ GTEST_BUILT = $(GTEST_BUILD_DIR)/.built
 
 # ===== Build ===== #
 
-.PHONY: clean profile pgo-gen release test
+.PHONY: clean profile pgo-gen release test benchmark
 
 all: $(BINARY_NAME)
 
@@ -90,6 +92,11 @@ profile: clean
 	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
 	sudo perf record -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
 	sudo hotspot perf.data
+
+# ===== Benchmark ===== #
+
+benchmark: clean
+	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
 
 # ===== Run/Build Tests ===== #
 
