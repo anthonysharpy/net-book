@@ -31,7 +31,7 @@ rte_mempool* mempool;
 int port_id = -1;
 
 void register_receiver(DataCallbackSignature callback) {
-    std::cout << "Registering network callback receiver..." << std::endl;
+    std::cout << "Registering network callback receiver...\n";
 
     callback_functions.push_back(callback);
 }
@@ -49,10 +49,10 @@ void cleanup() {
     int status = rte_eal_cleanup();
 
      if (status != 0) {
-        std::cerr << "Failed cleaning up DPDK: " << status << std::endl;
+        std::cerr << "Failed cleaning up DPDK: " << status << "\n";
     }
 
-    std::cout << "DPDK cleaned up successfuly" << std::endl;
+    std::cout << "DPDK cleaned up successfuly\n";
 }
 
 // Returns true on success.
@@ -61,7 +61,7 @@ bool setup_receive_queues() {
         int status = rte_eth_rx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr, mempool);
         
         if (status != 0) {
-            std::cerr << "Failed setting up receive queue: " << status << std::endl;
+            std::cerr << "Failed setting up receive queue: " << status << "\n";
             return false;
         }
     }
@@ -75,7 +75,7 @@ bool setup_transmit_queues() {
         int status = rte_eth_tx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr);
         
         if (status != 0) {
-            std::cerr << "Failed setting up transmit queue: " << status << std::endl;
+            std::cerr << "Failed setting up transmit queue: " << status << "\n";
             return false;
         }
     }
@@ -96,7 +96,7 @@ std::vector<int> get_port_ids() {
 
 // Returns true on success.
 bool initialise() {
-    std::cout << "Initialising DPDK..." << std::endl;
+    std::cout << "Initialising DPDK...\n";
 
     std::string core_range = "0-" + std::to_string(globals::dpdk_queues - 1);
 
@@ -115,17 +115,17 @@ bool initialise() {
     int status = rte_eal_init(9, eal_args);
 
     if (status < 0) {
-        std::cerr << "Failed initialising DPDK: " << status << std::endl;
+        std::cerr << "Failed initialising DPDK: " << status << "\n";
         cleanup();
         return false;
     }
 
-    std::cout << "Creating mbuf pool..." << std::endl;
+    std::cout << "Creating mbuf pool...\n";
 
     mempool = rte_pktmbuf_pool_create("netbook-pool", 1023, 128, 0, RTE_MBUF_DEFAULT_BUF_SIZE, SOCKET_ID_ANY);
 
     if (mempool == nullptr) {
-        std::cerr << "Failed initialising mbuf pool" << std::endl;
+        std::cerr << "Failed initialising mbuf pool\n";
         cleanup();
         return false;
     }
@@ -133,7 +133,7 @@ bool initialise() {
     auto port_ids = get_port_ids();
 
     if (port_ids.size() == 0) {
-        std::cerr << "No port IDs found" << std::endl;
+        std::cerr << "No port IDs found\n";
         cleanup();
         return false;
     }
@@ -149,43 +149,43 @@ bool initialise() {
         }
     };
 
-    std::cout << "Configuring Ethernet device..." << std::endl;
+    std::cout << "Configuring Ethernet device...\n";
 
     status = rte_eth_dev_configure(port_id, globals::dpdk_queues, globals::dpdk_queues, &port_configuration);
 
     if (status != 0) {
-        std::cerr << "Unable to configure Ethernet device: " << status << std::endl;
+        std::cerr << "Unable to configure Ethernet device: " << status << "\n";
         cleanup();
         return false;
     }
 
-    std::cout << "Setting up receive queues..." << std::endl;
+    std::cout << "Setting up receive queues...\n";
 
     if (!setup_receive_queues()) {
-        std::cerr << "Failed setting up receive queues" << std::endl;
+        std::cerr << "Failed setting up receive queues\n";
         cleanup();
         return false;
     }
 
-    std::cout << "Setting up transmit queues..." << std::endl;
+    std::cout << "Setting up transmit queues...\n";
 
     if (!setup_transmit_queues()) {
-        std::cerr << "Failed setting up transmit queues" << std::endl;
+        std::cerr << "Failed setting up transmit queues\n";
         cleanup();
         return false;
     }
 
-    std::cout << "Trying to enable promiscuous mode..." << std::endl;
+    std::cout << "Trying to enable promiscuous mode...\n";
 
     // This might fail as this is supposedly not supported everywhere.
     rte_eth_promiscuous_enable(port_id);
 
-    std::cout << "Starting ethernet device..." << std::endl;
+    std::cout << "Starting ethernet device...\n";
 
     status = rte_eth_dev_start(port_id);
 
     if (status < 0) {
-        std::cout << "Failed to start the Ethernet device: " << status << std::endl;
+        std::cout << "Failed to start the Ethernet device: " << status << "\n";
         cleanup();
         return false;
     }
@@ -298,7 +298,7 @@ void send_packet(rte_mbuf* packet, std::uint8_t queue_id) {
     const std::uint16_t packets_sent = rte_eth_tx_burst(port_id, queue_id, &packet, 1);
     
     if (packets_sent == 0) {
-        std::cout << "Unable to transmit the packet" << std::endl;
+        std::cout << "Unable to transmit the packet\n";
         rte_pktmbuf_free(packet);   // As the packet is not transmitted, we need to free the memory buffer by our self.
     }
 }

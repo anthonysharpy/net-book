@@ -26,15 +26,15 @@ void initialise() {
     sigaction(SIGINT, &action, nullptr);
 
     if (!netbook::dpdk::initialise()) {
-        std::cerr << "Initialisation failed, exiting" << std::endl;
+        std::cerr << "Initialisation failed, exiting...\n";
         exit(1);
     }
 
-    std::cout << "Registering network receivers..." << std::endl;
+    std::cout << "Registering network receivers...\n";
 
     netbook::dpdk::register_receiver(netbook::processing::process_message);
 
-    std::cout << "Initialisation succeeded" << std::endl;
+    std::cout << "Initialisation succeeded\n";
 }
 
 // Prints stats to the console.
@@ -51,8 +51,8 @@ void print_stats(std::stop_token stop) {
         auto packets_written_to_dpdk_per_second = static_cast<double>(packets_written_to_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
         auto packets_read_from_dpdk_per_second = static_cast<double>(packets_read_from_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
 
-        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk_per_second) << " packets/s)" << std::endl;
-        std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)" << std::endl;
+        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk_per_second) << " packets/s)\n";
+        std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)\n";
         std::cout.flush();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(netbook::globals::print_delay_ms));
@@ -62,18 +62,17 @@ void print_stats(std::stop_token stop) {
     }
 
     // Fix corrupt console output on function exit.
-    std::cout << std::endl;
-    std::cout << std::endl;
+    std::cout << "\n\n";
 }
 
 void poll() {
-    std::cout << "Beginning DPDK poll loop..." << std::endl;
+    std::cout << "Beginning DPDK poll loop...\n";
 
     std::vector<std::jthread> poll_read_threads;
     std::vector<std::jthread> mock_data_threads;
 
     for (int i = 0; i < netbook::globals::dpdk_queues; ++i) {
-        std::cout << "Creating queue loop " << i << "..." << std::endl;
+        std::cout << "Creating queue loop " << i << "...\n";
 
         poll_read_threads.emplace_back(netbook::dpdk::poll_read, i);
         mock_data_threads.emplace_back(netbook::mocking::push_mock_data, i);
@@ -99,16 +98,16 @@ void poll() {
     print_thread.request_stop();
     print_thread.join();
 
-    std::cout << "Got stop signal, stopping..." << std::endl;
+    std::cout << "Got stop signal, stopping...\n";
 
     for (int i = 0; i < netbook::globals::dpdk_queues; ++i) {
-        std::cout << "Waiting for queue loop " << i << " to stop..." << std::endl;
+        std::cout << "Waiting for queue loop " << i << " to stop...\n";
 
-        std::cout << "Waiting for mock data thread to stop..." << std::endl;
+        std::cout << "Waiting for mock data thread to stop...\n";
         mock_data_threads[i].request_stop();
         mock_data_threads[i].join();
 
-        std::cout << "Waiting for dpdk read thread to stop..." << std::endl;
+        std::cout << "Waiting for dpdk read thread to stop...\n";
         poll_read_threads[i].request_stop();
         poll_read_threads[i].join();
     }
