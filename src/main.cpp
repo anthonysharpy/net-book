@@ -87,7 +87,7 @@ void poll() {
         auto start_time = netbook::globals::simulation_start_time_ns.load();
         auto runtime_seconds = static_cast<double>(current_time - start_time) / 1000000000.0;
 
-        if (netbook::globals::program_runtime_limit_seconds != 0
+        if (netbook::globals::program_runtime_limit_seconds.has_value()
             && runtime_seconds >= netbook::globals::program_runtime_limit_seconds) {
             break;
         }
