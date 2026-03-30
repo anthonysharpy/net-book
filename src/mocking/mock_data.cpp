@@ -20,10 +20,10 @@ IncomingMarketMessage create_mock_market_data() {
 }
 
 // Push mock data to the network controller.
-void mock_data_pusher(std::stop_token stop, std::uint8_t queue_id, std::uint64_t packets_to_push) {
+void mock_data_pusher(std::uint8_t queue_id, std::uint64_t packets_to_push) {
     concurrency::pin_thread_to_core(queue_id);
 
-    while (!stop.stop_requested() && packets_to_push > 0) {
+    while (packets_to_push > 0) {
         #if packet_creation_delay_ns > 0
         std::this_thread::sleep_for(std::chrono::nanoseconds(constants::packet_creation_delay_ns));
         #endif

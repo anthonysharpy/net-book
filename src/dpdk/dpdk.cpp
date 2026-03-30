@@ -9,7 +9,6 @@
 #include <vector>
 #include <cstdint>
 #include <thread>
-#include <stop_token>
 #include <cstddef>
 #include "dpdk.hpp"
 #include "concurrency/spscringbuffer.hpp"
@@ -188,13 +187,13 @@ bool initialise() {
 }
 
 // Poll (read) the already created Ethernet device and process the incoming packets.
-void poll_read(std::stop_token stop, std::uint8_t queue_id, std::uint64_t packets_to_read) {
+void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     concurrency::pin_thread_to_core(queue_id);
 
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
 
-    while (!stop.stop_requested() && packets_to_read > 0) {
+    while (packets_to_read > 0) {
         packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, 32);
 
         if (packets_count == 0) {

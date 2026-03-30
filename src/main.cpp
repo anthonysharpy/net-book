@@ -26,8 +26,8 @@ void poll() {
     std::cout << "Beginning DPDK poll loop...\n";
     std::cout << "Sending " << netbook::constants::packet_limit << " packets over " << netbook::constants::dpdk_queue_count << " queues...\n";
 
-    std::vector<std::jthread> poll_read_threads;
-    std::vector<std::jthread> mock_data_threads;
+    std::vector<std::thread> poll_read_threads;
+    std::vector<std::thread> mock_data_threads;
 
     poll_read_threads.reserve(netbook::constants::dpdk_queue_count);
     mock_data_threads.reserve(netbook::constants::dpdk_queue_count);
