@@ -9,6 +9,7 @@
 #include "globals/constants.hpp"
 #include "helpers/time_helpers.hpp"
 #include "concurrency/concurrency.hpp"
+#include "output/output.hpp"
 
 static volatile sig_atomic_t got_stop_signal = 0;
 
@@ -37,34 +38,6 @@ void initialise() {
     std::cout << "Initialisation succeeded\n";
 }
 
-// Prints stats to the console.
-void print_stats(std::stop_token stop) {
-    netbook::concurrency::use_unique_core_for_thread();
-
-    while (!stop.stop_requested()) {
-        auto current_time = netbook::helpers::get_benchmark_timestamp_nanoseconds();
-        auto time_elapsed = current_time - netbook::globals::simulation_start_time_ns.load();
-
-        auto packets_written_to_dpdk = netbook::globals::packets_written_to_dpdk.load();
-        auto packets_read_from_dpdk = netbook::globals::packets_read_from_dpdk.load();
-
-        auto packets_written_to_dpdk_per_second = static_cast<double>(packets_written_to_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
-        auto packets_read_from_dpdk_per_second = static_cast<double>(packets_read_from_dpdk) / (static_cast<double>(time_elapsed) / 1000000000.0);
-
-        std::cout << "Packets given to DPDK: " <<  packets_written_to_dpdk << " (" << static_cast<std::uint64_t>(packets_written_to_dpdk_per_second) << " packets/s)\n";
-        std::cout << "Packets taken from DPDK: " <<  packets_read_from_dpdk << " (" << static_cast<std::uint64_t>(packets_read_from_dpdk_per_second) << " packets/s)\n";
-        std::cout.flush();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(netbook::globals::print_delay_ms));
-
-        // Wipe the lines we printed above.
-        std::cout << "\033[" << 2 << "F";
-    }
-
-    // Fix corrupt console output on function exit.
-    std::cout << "\n\n";
-}
-
 void poll() {
     std::cout << "Beginning DPDK poll loop...\n";
 
@@ -78,7 +51,7 @@ void poll() {
         mock_data_threads.emplace_back(netbook::mocking::push_mock_data, i);
     }
    
-    std::jthread print_thread(print_stats);
+    std::jthread print_thread(netbook::output::print_stats_thread);
 
     netbook::globals::simulation_start_time_ns.store(netbook::helpers::get_benchmark_timestamp_nanoseconds());
 
