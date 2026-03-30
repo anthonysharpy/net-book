@@ -7,7 +7,7 @@
 #
 
 #
-# bench.sh – continuous throughput benchmarker
+# bench.sh – continuous time benchmarker
 # Compares ./netbookmain (baseline) vs ./netbook (candidate)
 #
 
@@ -28,8 +28,8 @@ run_binary() {
     raw=$("./${bin}" --runtime=5 2>&1) || { echo "ERROR: ./${bin} failed" >&2; return 1; }
 
     local v
-    v=$(echo "$raw" | grep -oP 'Total throughput:\s*\K[0-9]+' | tail -1) || {
-        echo "ERROR: could not find 'Total throughput' in ./${bin} output" >&2
+    v=$(echo "$raw" | grep -oP 'Total time:\s*\K[0-9]+' | tail -1) || {
+        echo "ERROR: could not find 'Total time' in ./${bin} output" >&2
         return 1
     }
 
@@ -75,37 +75,37 @@ draw_table() {
         pct="0.00"
     fi
 
-    # Higher throughput = better = green
-    if (( delta > 0 )); then
-        colour="${GREEN}"; sign="+"
-    elif (( delta < 0 )); then
-        colour="${RED}"; sign=""
+    # Lower time = better = green
+    if (( delta < 0 )); then
+        colour="${GREEN}"; sign=""
+    elif (( delta > 0 )); then
+        colour="${RED}"; sign="+"
     else
         colour="${WHITE}"; sign=""
     fi
 
     echo
-    printf "${BOLD}${CYAN}  ⚡  netbook throughput benchmark${RESET}   "
+    printf "${BOLD}${CYAN}  ⚡  netbook time benchmark${RESET}   "
     printf "${DIM}runs completed: ${WHITE}%d${RESET}\n" "$run_count"
     echo
 
     # ── Summary table ─────────────────────────
-    local W=72
+    local W=84
     printf '%*s\n' "$W" '' | tr ' ' '═'
-    printf "│ %-18s │ %12s │ %12s │ %12s │ %12s │\n" \
+    printf "│ %-18s │ %14s │ %14s │ %14s │ %14s │\n" \
         "" "AVG" "MIN" "MAX" "LAST"
     printf '%*s\n' "$W" '' | tr ' ' '─'
-    printf "│ ${MAGENTA}%-18s${RESET} │ %12s │ %12s │ %12s │ %12s │\n" \
+    printf "│ ${MAGENTA}%-18s${RESET} │ %11s ns │ %11s ns │ %11s ns │ %11s ns │\n" \
         "netbookmain (base)" "$bm_avg" "$bm_min" "$bm_max" "$bm_last"
-    printf "│ ${CYAN}%-18s${RESET} │ %12s │ %12s │ %12s │ %12s │\n" \
+    printf "│ ${CYAN}%-18s${RESET} │ %11s ns │ %11s ns │ %11s ns │ %11s ns │\n" \
         "netbook (cand)" "$cd_avg" "$cd_min" "$cd_max" "$cd_last"
     printf '%*s\n' "$W" '' | tr ' ' '═'
     echo
-    printf "  ${BOLD}Delta (avg):${RESET}  ${colour}${sign}%d pkts/run${RESET}     " "$delta"
+    printf "  ${BOLD}Delta (avg):${RESET}  ${colour}${sign}%s ns${RESET}     " "$delta"
     printf "${BOLD}Change:${RESET}  ${colour}${sign}%s%%${RESET}\n" "$pct"
     echo
-    printf "  ${DIM}Green delta = candidate has higher throughput · Red = lower${RESET}\n"
-    printf "  ${DIM}All values are total packets processed per run. Press Ctrl-C to stop.${RESET}\n\n"
+    printf "  ${DIM}Green delta = candidate is faster · Red = slower${RESET}\n"
+    printf "  ${DIM}All values in nanoseconds. Press Ctrl-C to stop.${RESET}\n\n"
 }
 
 # ── Cleanup on exit ───────────────────────────

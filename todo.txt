@@ -1,2 +1,4 @@
 make queue count as arg
 make debug mode as arg
+
+wrap cleanup in RAII, remove jthreads

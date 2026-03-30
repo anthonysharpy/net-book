@@ -4,6 +4,8 @@ This is a work in progress :-) (30/3/2025)
 
 NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
 
+The program, which is optimised for raw throughput, writes 10,000,000 network packets and then quits, displaying the time taken.
+
 ## Prerequisites
 
 In order to run the program, you may need to follow the steps below. Note that these might not work on all versions of Linux.
@@ -52,12 +54,3 @@ sudo chmod 777 /dev/hugepages
 ```
 ./netbook
 ```
-
-### Args
-
-The below are optional.
-
-| <div style="width:30vw">Command</div> | Explanation |
-| --- | --- |
-| --runtime=N | The program stops after N seconds. N must be an integer |
-

@@ -57,7 +57,7 @@ void cleanup() {
 
 // Returns true on success.
 bool setup_receive_queues() {
-    for (int i = 0; i < globals::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < globals::dpdk_queue_count; ++i) {
         int status = rte_eth_rx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr, mempool);
         
         if (status != 0) {
@@ -71,7 +71,7 @@ bool setup_receive_queues() {
 
 // Returns true on success.
 bool setup_transmit_queues() {
-    for (int i = 0; i < globals::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < globals::dpdk_queue_count; ++i) {
         int status = rte_eth_tx_queue_setup(port_id, i, 256, SOCKET_ID_ANY, nullptr);
         
         if (status != 0) {
@@ -189,14 +189,13 @@ bool initialise() {
 }
 
 // Poll (read) the already created Ethernet device and process the incoming packets.
-void poll_read(std::stop_token stop, std::uint8_t queue_id) {
+void poll_read(std::stop_token stop, std::uint8_t queue_id, std::uint64_t packets_to_read) {
     concurrency::pin_thread_to_core(queue_id);
 
     rte_mbuf *received_packets[32];
     std::uint16_t packets_count = 0;
-    std::uint64_t packets_read = 0;
 
-    while (!stop.stop_requested()) {
+    while (!stop.stop_requested() && packets_to_read > 0) {
         packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, 32);
 
         if (packets_count == 0) {
@@ -215,12 +214,7 @@ void poll_read(std::stop_token stop, std::uint8_t queue_id) {
 
         rte_pktmbuf_free_bulk(received_packets, packets_count);
 
-        packets_read += packets_count;
-
-        if (packets_read >= globals::write_stats_interval) {
-            globals::packets_read_from_dpdk.fetch_add(packets_read);
-            packets_read = 0;
-        }
+        packets_to_read -= packets_count;
     }
 }
 
@@ -300,20 +294,12 @@ void send_packet(rte_mbuf* packet, std::uint8_t queue_id) {
 
 // Push data into the buffer for writing.
 void push_data(char* data, size_t data_length, std::uint8_t queue_id) {
-    thread_local std::uint64_t packets_written = 0;
     rte_mbuf* packet;
 
     // Keep retrying until we can successfully create it.
     while ((packet = create_packet(data, data_length)) == nullptr) {}
 
     send_packet(packet, queue_id);
-
-    ++packets_written;
-
-    if (packets_written >= globals::write_stats_interval) {
-        globals::packets_written_to_dpdk.fetch_add(packets_written);
-        packets_written = 0;
-    }
 }
 
 }
