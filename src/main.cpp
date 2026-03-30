@@ -10,21 +10,7 @@
 #include "helpers/time_helpers.hpp"
 #include "concurrency/concurrency.hpp"
 
-static volatile sig_atomic_t got_stop_signal = 0;
-
-// Called when we have been told to terminate.
-void terminate_handler(int) 
-{
-    got_stop_signal = 1;
-}
-
 void initialise() {
-    struct sigaction action;
-    memset(&action, 0, sizeof(struct sigaction));
-    action.sa_handler = terminate_handler;
-    sigaction(SIGTERM, &action, nullptr);
-    sigaction(SIGINT, &action, nullptr);
-
     if (!netbook::dpdk::initialise()) {
         std::cerr << "Initialisation failed, exiting...\n";
         exit(1);
