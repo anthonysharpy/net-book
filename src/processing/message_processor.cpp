@@ -8,6 +8,7 @@ namespace netbook::processing {
 using types::MarketMessage;
 
 void process_message(char* data, size_t) {
+    [[maybe_unused]]
     auto message = MarketMessage::from_network_bytes(data);
 }
 
