@@ -190,11 +190,11 @@ bool initialise() {
 void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     concurrency::pin_thread_to_core(queue_id);
 
-    rte_mbuf *received_packets[32];
+    rte_mbuf *received_packets[16];
     std::uint16_t packets_count = 0;
 
     while (packets_to_read > 0) {
-        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, 32);
+        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, 16);
 
         if (packets_count == 0) {
             continue;
