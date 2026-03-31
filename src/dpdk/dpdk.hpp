@@ -13,7 +13,7 @@ using DataCallbackSignature = void(*)(char*, size_t);
 bool initialise();
 void cleanup();
 void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read);
-void push_data(std::uint32_t packet_count, std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE>& data, std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths, std::uint8_t queue_id);
+void push_data(std::uint32_t packet_count, std::array<std::array<char, constants::MARKET_MESSAGE_SIZE>, constants::PACKET_BATCH_SIZE>& data, std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths, std::uint8_t queue_id);
 void register_receiver(DataCallbackSignature callback);
 
 }

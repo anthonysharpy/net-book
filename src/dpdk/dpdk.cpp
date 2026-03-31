@@ -225,7 +225,7 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
 
 bool create_packets(
     std::uint32_t packet_count,
-    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE>& data,
+    std::array<std::array<char, constants::MARKET_MESSAGE_SIZE>, constants::PACKET_BATCH_SIZE>& data,
     std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths,
     std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE>& packets_out
 ) {
@@ -309,7 +309,7 @@ void send_packets(
 // Push data into the buffer for writing.
 void push_data(
     std::uint32_t packet_count,
-    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE>& data,
+    std::array<std::array<char, constants::MARKET_MESSAGE_SIZE>, constants::PACKET_BATCH_SIZE>& data,
     std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths,
     std::uint8_t queue_id
 ) {

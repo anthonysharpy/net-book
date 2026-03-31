@@ -33,7 +33,7 @@ void mock_data_pusher(std::uint8_t queue_id, std::uint32_t packets_to_push) {
     concurrency::pin_thread_to_core(queue_id);
 
     std::array<IncomingMarketMessage, constants::PACKET_BATCH_SIZE> messages;
-    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE> messages_as_bytes;
+    std::array<std::array<char, constants::MARKET_MESSAGE_SIZE>, constants::PACKET_BATCH_SIZE> messages_as_bytes;
     std::array<size_t, constants::PACKET_BATCH_SIZE> message_lengths;
 
     while (packets_to_push > 0) {
