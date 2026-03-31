@@ -60,6 +60,7 @@ sudo chmod 777 /dev/hugepages
 ### 31 Mar 2026
 - Send packets in small batches instead of individually.
 - Increase mempool size by 8x for ~59% speed boost.
+- Use 8 cores instead of 6 for ~23% speed boost.
 
 ### 30 Mar 2026
 - Half read polling buffer size for a ~11% speed increase.
