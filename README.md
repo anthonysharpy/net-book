@@ -4,7 +4,7 @@ This is a work in progress :-) (30/3/2025)
 
 NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
 
-The program, which is optimised for raw throughput, writes 1,000,000 network packets and then quits, displaying the time taken.
+The program, which is optimised for raw throughput, writes 2,000,000 network packets and then quits, displaying the time taken. Currently the program is capable of processing ~1,315,000 packets/second on an 8 logical core CPU.
 
 ## Prerequisites
 
