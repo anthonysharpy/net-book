@@ -2,3 +2,5 @@ make queue count as arg
 make debug mode as arg
 
 wrap cleanup in RAII
+
+when we tell each thread how many to process, the total is wrong, probably
