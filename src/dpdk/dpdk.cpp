@@ -190,11 +190,11 @@ bool initialise() {
 void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     concurrency::pin_thread_to_core(queue_id);
 
-    rte_mbuf *received_packets[constants::packet_batch_size];
+    std::array<rte_mbuf*, constants::packet_batch_size> received_packets;
     std::uint16_t packets_count = 0;
 
     while (packets_to_read > 0) {
-        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets, constants::packet_batch_size);
+        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets.data(), constants::packet_batch_size);
 
         if (packets_count == 0) {
             continue;
@@ -210,7 +210,7 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
             }
         }
 
-        rte_pktmbuf_free_bulk(received_packets, packets_count);
+        rte_pktmbuf_free_bulk(received_packets.data(), packets_count);
 
         packets_to_read -= packets_count;
     }
