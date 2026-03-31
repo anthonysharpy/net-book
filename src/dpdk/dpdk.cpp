@@ -55,7 +55,7 @@ void cleanup() {
 
 // Returns true on success.
 bool setup_receive_queues() {
-    for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < constants::DPDK_QUEUE_COUNT; ++i) {
         int status = rte_eth_rx_queue_setup(port_id, i, 128, SOCKET_ID_ANY, nullptr, mempool);
         
         if (status != 0) {
@@ -69,7 +69,7 @@ bool setup_receive_queues() {
 
 // Returns true on success.
 bool setup_transmit_queues() {
-    for (unsigned int i = 0; i < constants::dpdk_queue_count; ++i) {
+    for (unsigned int i = 0; i < constants::DPDK_QUEUE_COUNT; ++i) {
         int status = rte_eth_tx_queue_setup(port_id, i, 128, SOCKET_ID_ANY, nullptr);
         
         if (status != 0) {
@@ -96,7 +96,7 @@ std::vector<int> get_port_ids() {
 bool initialise() {
     std::cout << "Initialising DPDK...\n";
 
-    std::string core_range = "0-" + std::to_string(constants::dpdk_queue_count - 1);
+    std::string core_range = "0-" + std::to_string(constants::DPDK_QUEUE_COUNT - 1);
 
     char* eal_args[] = {
         (char*)"netbook", 
@@ -122,7 +122,7 @@ bool initialise() {
 
     mempool = rte_pktmbuf_pool_create(
         "netbook-pool",
-        constants::mempool_size,
+        constants::MEMPOOL_SIZE,
         128,
         0,
         RTE_MBUF_DEFAULT_BUF_SIZE,
@@ -151,7 +151,7 @@ bool initialise() {
 
     std::cout << "Configuring Ethernet device...\n";
 
-    status = rte_eth_dev_configure(port_id, constants::dpdk_queue_count, constants::dpdk_queue_count, &port_configuration);
+    status = rte_eth_dev_configure(port_id, constants::DPDK_QUEUE_COUNT, constants::DPDK_QUEUE_COUNT, &port_configuration);
 
     if (status != 0) {
         std::cerr << "Unable to configure Ethernet device: " << status << "\n";
@@ -197,11 +197,11 @@ bool initialise() {
 void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     concurrency::pin_thread_to_core(queue_id);
 
-    std::array<rte_mbuf*, constants::packet_batch_size> received_packets;
+    std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE> received_packets;
     std::uint16_t packets_count = 0;
 
     while (packets_to_read > 0) {
-        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets.data(), constants::packet_batch_size);
+        packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets.data(), constants::PACKET_BATCH_SIZE);
 
         if (packets_count == 0) {
             continue;
@@ -225,9 +225,9 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
 
 bool create_packets(
     std::uint32_t packet_count,
-    std::array<std::array<char, 12>, constants::packet_batch_size>& data,
-    std::array<size_t, constants::packet_batch_size>& data_lengths,
-    std::array<rte_mbuf*, constants::packet_batch_size>& packets_out
+    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE>& data,
+    std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths,
+    std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE>& packets_out
 ) {
     // Get a memory buffer from our memory pool. On this memory buffer we will write our packet data.
     if (rte_mempool_get_bulk(mempool, reinterpret_cast<void**>(packets_out.data()), packet_count) != 0) {
@@ -294,7 +294,7 @@ bool create_packets(
 
 void send_packets(
     std::uint32_t packet_count,
-    std::array<rte_mbuf*, constants::packet_batch_size>& packets,
+    std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE>& packets,
     std::uint8_t queue_id
 ) {
     // The DPDK API `rte_eth_tx_burst` will automatically release the memory buffer after
@@ -309,11 +309,11 @@ void send_packets(
 // Push data into the buffer for writing.
 void push_data(
     std::uint32_t packet_count,
-    std::array<std::array<char, 12>, constants::packet_batch_size>& data,
-    std::array<size_t, constants::packet_batch_size>& data_lengths,
+    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE>& data,
+    std::array<size_t, constants::PACKET_BATCH_SIZE>& data_lengths,
     std::uint8_t queue_id
 ) {
-    std::array<rte_mbuf*, constants::packet_batch_size> packets;
+    std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE> packets;
 
     // Keep retrying until we can successfully create it.
     while (!create_packets(packet_count, data, data_lengths, packets)) {}

@@ -10,7 +10,7 @@ using netbook::types::IncomingMarketMessage;
 
 void create_mock_market_data(
     int count,
-    std::array<IncomingMarketMessage, constants::packet_batch_size> &data_out
+    std::array<IncomingMarketMessage, constants::PACKET_BATCH_SIZE> &data_out
 ) { 
     static std::uint16_t current_index = 0;
 
@@ -32,12 +32,12 @@ void create_mock_market_data(
 void mock_data_pusher(std::uint8_t queue_id, std::uint32_t packets_to_push) {
     concurrency::pin_thread_to_core(queue_id);
 
-    std::array<IncomingMarketMessage, constants::packet_batch_size> messages;
-    std::array<std::array<char, 12>, constants::packet_batch_size> messages_as_bytes;
-    std::array<size_t, constants::packet_batch_size> message_lengths;
+    std::array<IncomingMarketMessage, constants::PACKET_BATCH_SIZE> messages;
+    std::array<std::array<char, 12>, constants::PACKET_BATCH_SIZE> messages_as_bytes;
+    std::array<size_t, constants::PACKET_BATCH_SIZE> message_lengths;
 
     while (packets_to_push > 0) {
-        unsigned int packet_count = std::min(packets_to_push, constants::packet_batch_size);
+        unsigned int packet_count = std::min(packets_to_push, constants::PACKET_BATCH_SIZE);
 
         create_mock_market_data(packet_count, messages);
 
