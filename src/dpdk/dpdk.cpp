@@ -123,7 +123,7 @@ bool initialise() {
     mempool = rte_pktmbuf_pool_create("netbook-pool", 1023, 128, 0, RTE_MBUF_DEFAULT_BUF_SIZE, SOCKET_ID_ANY);
 
     if (mempool == nullptr) {
-        std::cerr << "Failed initialising mbuf pool\n";
+        std::cerr << "Failed initialising mbuf pool: " << rte_errno << "\n";
         cleanup();
         return false;
     }
