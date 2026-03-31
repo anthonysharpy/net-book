@@ -57,6 +57,9 @@ sudo chmod 777 /dev/hugepages
 
 ## Recent changes
 
+### 31 Mar 2026
+- Send packets in small batches instead of individually.
+
 ### 30 Mar 2026
 - Half read polling buffer size for a ~11% speed increase.
 - Half DPDK queue size for a ~1.36% speed increase.
