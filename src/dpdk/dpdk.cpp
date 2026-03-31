@@ -290,9 +290,12 @@ void send_packets(
     std::array<rte_mbuf*, constants::packet_batch_size>& packets,
     std::uint8_t queue_id
 ) {
-    // The DPDK API `rte_eth_tx_burst` will automatically release the memory buffer after tranmission is successful.
-    while (packet_count > 0) {
-        packet_count -= rte_eth_tx_burst(port_id, queue_id, packets.data(), packet_count);
+    // The DPDK API `rte_eth_tx_burst` will automatically release the memory buffer after
+    // tranmission is successful.
+    unsigned int progress = 0;
+
+    while (progress < packet_count) {
+        progress += rte_eth_tx_burst(port_id, queue_id, packets.data() + progress, packet_count);
     }
 }
 
