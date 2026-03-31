@@ -295,7 +295,7 @@ void send_packets(
     unsigned int progress = 0;
 
     while (progress < packet_count) {
-        progress += rte_eth_tx_burst(port_id, queue_id, packets.data() + progress, packet_count);
+        progress += rte_eth_tx_burst(port_id, queue_id, packets.data() + progress, packet_count-progress);
     }
 }
 
