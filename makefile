@@ -90,7 +90,7 @@ pgo-gen: clean
 
 profile: clean
 	$(MAKE) all COMPILE_FLAGS="$(PROFILE_COMPILE_FLAGS)" LINK_FLAGS="$(PROFILE_LINK_FLAGS)"
-	sudo perf record -e cycles,cache-references,LLC-load-misses -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
+	sudo perf record -e cycles,cache-references,LLC-load-misses --sample-cpu -F 16000 -g -- ./$(BINARY_NAME) --runtime=10
 	sudo hotspot perf.data
 
 # ===== Benchmark ===== #
