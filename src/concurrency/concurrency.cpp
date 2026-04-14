@@ -12,13 +12,4 @@ void pin_thread_to_core(int core_id) {
     pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 }
 
-// Makes the current thread run on a unique core.
-void use_unique_core_for_thread() {
-    static unsigned int last_used_core = 0;
-
-    pin_thread_to_core(last_used_core);
-
-    ++last_used_core;
-}
-
 }
