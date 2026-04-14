@@ -28,7 +28,7 @@ You'll need to have hugepages enabled for the software to work.
 A simple way to do this is via running the provided script. Note that this will temporarily decrease the available memory on your machine by about 256MB. This gets reverted on restart, or you can probably revert it manually by running the same commands.
 
 ```
-./enable-hugepages
+./enable-hugepages.sh
 ```
 
 You can then check it was successful by doing:
@@ -44,6 +44,8 @@ If you run into permissions issues and it's safe to do so you can try temporaril
 ```
 sudo chmod 777 /dev/hugepages
 ```
+
+Sometimes other processes can eat up all your hugepages. You'll have to track these down yourself.
 
 ## Building
 
