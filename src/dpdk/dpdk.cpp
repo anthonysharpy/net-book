@@ -200,12 +200,25 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE> received_packets;
     std::uint16_t packets_count = 0;
 
+    // If we find no packets, we'll introduce an artificial delay to avoid pointless spinning.
+    int delay = 1;
+    constexpr int MAX_DELAY = 2048;
+
     while (packets_to_read > 0) {
         packets_count = rte_eth_rx_burst(port_id, queue_id, received_packets.data(), constants::PACKET_BATCH_SIZE);
 
         if (packets_count == 0) {
+            delay *= 2;
+            delay = std::min(delay, MAX_DELAY);
+
+            for (int i = 0; i < delay; ++i) {
+                rte_pause();
+            }
+
             continue;
         }
+        
+        delay = 1;
 
         for (int i = 0; i < packets_count; ++i) {
             auto data_location = rte_pktmbuf_mtod(received_packets[i], char*);

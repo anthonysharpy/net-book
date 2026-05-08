@@ -59,6 +59,9 @@ Sometimes other processes can eat up all your hugepages. You'll have to track th
 
 ## Recent changes
 
+### 8 May 2026
+- Temporarily pause read thread when no incoming packets are found, increasing expotentially. Improves throughput by about 6.5%.
+
 ### 31 Mar 2026
 - Send packets in small batches instead of individually.
 - Increase mempool size by 8x for ~59% speed boost.
