@@ -34,7 +34,7 @@ A simple way to do this is via running the provided script. Note that this will 
 You can then check it was successful by doing:
 
 ```
-grep -i HugePages_Total /proc/meminfo
+grep Huge /proc/meminfo
 ```
 
 A computer restart might be necessary.
