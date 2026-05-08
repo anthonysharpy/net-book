@@ -13,7 +13,7 @@
 # ===== Configuration ===== #
 
 SUPPRESSED_WARNINGS = -Wno-interference-size
-COMPILER = g++-12
+COMPILER = g++-16
 BINARY_NAME = netbook
 TESTS_BINARY_NAME = unit_tests
 SRC_DIR = src
