@@ -4,3 +4,7 @@ make debug mode as arg
 wrap cleanup in RAII
 
 when we tell each thread how many to process, the total is wrong, probably
+
+core pinning is wrong in netbook - 0+1 are not adjecent lcores. 0,4 etc are. need to make clear in
+that project's readme that it assumes you have an 8lcore processor. or, we can figure it out
+dynamically or something idk.
