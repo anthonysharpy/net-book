@@ -1,6 +1,6 @@
 # NetBook
 
-This is a work in progress :-) (13/4/2025) I still need to add RAII, tidy up the code, optimise, etc...
+This is a work in progress :-) (13/4/2026) I still need to add RAII, tidy up the code, optimise, etc...
 
 NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
 
