@@ -60,7 +60,7 @@ Sometimes other processes can eat up all your hugepages. You'll have to track th
 ## Recent changes
 
 ### 17th October 2026
-- Decrease the number of queues from 8 to 4. Ideally we should have one thread writing and one thread reading on each queue (8 threads). 8 queues meant 16 threads, which resulted in pointless blocking because the CPU can only run 8 threads at once. With 8 threads, we can pair read and write threads with each other on the same core, allowing them to share cache whilst taking advantage of hyperthreading so that the threads generally do not block eachother. This was the original intention but it hadn't been implemented properly. This change gives us a ~93.4% throughput boost.
+- Decrease the number of queues from 8 to 4. Ideally we should have one thread writing and one thread reading on each queue (8 threads). 8 queues meant 16 threads, which resulted in pointless blocking because the CPU can only run 8 threads at once. With 8 threads, we can pair read and write threads with each other on the same core, allowing them to share cache whilst taking advantage of hyperthreading so that the threads generally do not block eachother. This was the original intention but it hadn't been implemented properly. This change gives us a ~1515% throughput boost (yes, 15x faster).
 
 ### 8 May 2026
 - Temporarily pause read thread when no incoming packets are found, increasing expotentially. Improves throughput by about 6.5%.
