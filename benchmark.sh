@@ -130,4 +130,7 @@ while true; do
 
     run_count=$(( run_count + 1 ))
     draw_table "$run_count"
+
+    # Sleep to prevent performance drifting caused by CPU overheating.
+    sleep 2
 done
