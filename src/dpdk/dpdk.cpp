@@ -195,7 +195,9 @@ bool initialise() {
 
 // Poll (read) the already created Ethernet device and process the incoming packets.
 void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
-    concurrency::pin_thread_to_core(queue_id);
+    // Offset by DPDK_QUEUE_COUNT to put the read threads on cores 4, 5, 6, 7... etc. Then they will
+    // share a core with the write thread via hyperthreading.
+    concurrency::pin_thread_to_core(queue_id + netbook::constants::DPDK_QUEUE_COUNT);
 
     std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE> received_packets;
     std::uint16_t packets_count = 0;
