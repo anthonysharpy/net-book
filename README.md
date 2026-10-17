@@ -4,7 +4,7 @@ This is a work in progress :-) (13/4/2026) I still need to add RAII, tidy up the
 
 NetBook writes and reads market-data networking packets using DPDK, bypassing the kernel.
 
-The program, which is optimised for raw throughput, writes and reads 2,000,000 network packets and then quits, displaying the time taken. Currently the program is capable of processing ~1,315,000 packets/second on an 8 logical core CPU.
+The program, which is optimised for raw throughput, writes and reads 2,000,000 network packets and then quits, displaying the time taken. Currently the program is capable of processing ~19,000,000 packets/second on an 8 logical core CPU.
 
 ## Prerequisites
 
