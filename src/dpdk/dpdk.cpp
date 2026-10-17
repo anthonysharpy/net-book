@@ -199,6 +199,11 @@ void poll_read(std::uint8_t queue_id, std::uint64_t packets_to_read) {
     // share a core with the write thread via hyperthreading.
     concurrency::pin_thread_to_core(queue_id + netbook::constants::DPDK_QUEUE_COUNT);
 
+    if (rte_thread_register()) {
+        std::cout << "Failed to register thread\n";
+        return;
+    }
+
     std::array<rte_mbuf*, constants::PACKET_BATCH_SIZE> received_packets;
     std::uint16_t packets_count = 0;
 

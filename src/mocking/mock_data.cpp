@@ -3,6 +3,8 @@
 #include "helpers/number_helpers.hpp"
 #include "constants/constants.hpp"
 #include "concurrency/concurrency.hpp"
+#include <rte_lcore.h>
+#include <iostream>
 
 namespace netbook::mocking {
 
@@ -31,6 +33,11 @@ void create_mock_market_data(
 // Push mock data to the network controller.
 void mock_data_pusher(std::uint8_t queue_id, std::uint32_t packets_to_push) {
     concurrency::pin_thread_to_core(queue_id);
+
+    if (rte_thread_register()) {
+        std::cout << "Failed to register thread\n";
+        return;
+    }
 
     std::array<IncomingMarketMessage, constants::PACKET_BATCH_SIZE> messages;
     std::array<std::array<char, constants::MARKET_MESSAGE_SIZE>, constants::PACKET_BATCH_SIZE> messages_as_bytes;
